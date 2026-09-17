@@ -1,0 +1,26 @@
+{
+  "name": "ΣΧΟΛΕΙΟ 360°",
+  "short_name": "ΣΧΟΛΕΙΟ",
+  "description": "Μελέτη & προετοιμασία: Γυμνάσιο → Πανελλήνιες / Κατατακτήριες. Βιβλία, εξεταστέα ύλη, πρόγραμμα διαβάσματος, διαγωνίσματα, πίνακας.",
+  "lang": "el",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0e0f13",
+  "theme_color": "#2f8fd8",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Πρόγραμμα Διαβάσματος", "short_name": "Πρόγραμμα", "url": "./index.html?go=schedule", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Διαγωνίσματα / Κουίζ", "short_name": "Κουίζ", "url": "./index.html?go=quiz", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Σχολές & Επαγγέλματα", "short_name": "Σχολές", "url": "./index.html?go=careers", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
+  ]
+}

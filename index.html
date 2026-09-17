@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<!-- ΣΧΟΛΕΙΟ 360° — © by Chronis Makris -->
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="author" content="Chronis Makris">
+<meta name="copyright" content="© by Chronis Makris">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ΣΧΟΛΕΙΟ 360°</title>
+<!-- PWA: εγκατάσταση ως εφαρμογή στο κινητό (λειτουργεί όταν σερβίρεται μέσω http/https/localhost) -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#2f8fd8">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ΣΧΟΛΕΙΟ 360°">
+<style>
+:root{
+  --bg:#0e0f13; --bg2:#15171d; --panel:#1b1e26; --panel2:#22262f;
+  --line:#28303c; --txt:#f4f6f8; --muted:#93a1b3;
+  /* Γαλάζιο θέμα (οι μεταβλητές red* κρατούν το όνομα αλλά είναι γαλάζιες) */
+  --red:#2f8fd8; --red2:#5bb2f0; --redsoft:#122c40;
+  --gold:#e8b74a; --blue:#5bb2f0; --purple:#b07bff;
+  --radius:14px; --shadow:0 6px 22px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(1200px 700px at 80% -10%,#1a1d25 0,var(--bg) 60%);
+  color:var(--txt); font-family:"Segoe UI",system-ui,Roboto,Arial,sans-serif;
+  font-size:15px; line-height:1.5; min-height:100vh;
+}
+a{color:var(--red2);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3,h4{margin:0 0 .5em;font-weight:700;letter-spacing:.2px}
+h2{font-size:1.5rem;color:#fff}
+h3{font-size:1.15rem;color:#fff}
+.hidden{display:none!important}
+
+/* Layout */
+.app{display:flex;min-height:100vh}
+.side{
+  width:230px;flex-shrink:0;background:linear-gradient(180deg,#16181f,#101218);
+  border-right:1px solid var(--line);padding:18px 12px;position:sticky;top:0;height:100vh;
+  overflow-y:auto;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 16px}
+.brand .logo{
+  width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--red),#134a7a);
+  display:grid;place-items:center;font-weight:800;color:#fff;font-size:18px;box-shadow:var(--shadow)
+}
+.brand b{font-size:1.05rem;letter-spacing:.5px}
+.brand small{display:block;color:var(--muted);font-size:.7rem;font-weight:400}
+.nav{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.nav button{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:transparent;
+  color:var(--muted);border:0;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:.92rem;
+  font-family:inherit;transition:.15s
+}
+.nav button .ic{width:22px;text-align:center;font-size:1.05rem}
+.nav button:hover{background:var(--panel);color:#fff}
+.nav button.active{background:linear-gradient(90deg,var(--redsoft),transparent);color:#fff;box-shadow:inset 3px 0 0 var(--red)}
+.side .tip{margin-top:18px;font-size:.72rem;color:var(--muted);padding:8px;border-top:1px solid var(--line)}
+
+.main{flex:1;min-width:0;padding:26px 30px 60px;max-width:1200px;margin:0 auto;width:100%}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.topbar .who{font-size:.85rem;color:var(--muted)}
+.topbar .who b{color:#fff}
+
+/* Cards & UI */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px;box-shadow:var(--shadow)}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.75rem;color:var(--muted);margin:2px 4px 2px 0}
+.pill.red{background:var(--redsoft);border-color:var(--red);color:#ffd9dc}
+.tag{font-size:.7rem;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.btn{
+  background:linear-gradient(135deg,var(--red),#1a5fa0);color:#fff;border:0;padding:10px 18px;border-radius:10px;
+  font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s;box-shadow:0 4px 14px rgba(47,143,216,.32)
+}
+.btn:hover{filter:brightness(1.12)}
+.btn.ghost{background:var(--panel2);box-shadow:none;border:1px solid var(--line);color:var(--txt)}
+.btn.ghost:hover{border-color:var(--red);color:#fff}
+.btn.sm{padding:6px 12px;font-size:.8rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+label{display:block;font-size:.82rem;color:var(--muted);margin:12px 0 5px;font-weight:600}
+input,select,textarea{
+  width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);
+  border-radius:9px;padding:10px 12px;font-size:.9rem;font-family:inherit
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--red)}
+textarea{resize:vertical;min-height:70px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.row>*{flex:1;min-width:140px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{
+  background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.82rem;
+  cursor:pointer;user-select:none;transition:.12s
+}
+.chip.on{background:var(--redsoft);border-color:var(--red);color:#fff;font-weight:600}
+.hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+.divider{height:1px;background:var(--line);margin:18px 0}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.4px}
+tr:hover td{background:var(--panel2)}
+.subj-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.subj-item:last-child{border-bottom:0}
+.stat{text-align:center;padding:14px}
+.stat b{display:block;font-size:1.8rem;color:var(--red2)}
+.stat span{font-size:.78rem;color:var(--muted)}
+.progress{height:9px;background:var(--bg2);border-radius:999px;overflow:hidden;margin-top:6px}
+.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--red),var(--red2))}
+.book{display:flex;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--bg2);margin-bottom:10px}
+.book .cov{width:46px;height:62px;border-radius:6px;background:linear-gradient(135deg,var(--panel2),#0b0c10);display:grid;place-items:center;font-size:1.4rem;flex-shrink:0}
+.book .meta{flex:1;min-width:0}
+.book .meta b{display:block}
+.book .meta small{color:var(--muted)}
+.notice{background:var(--redsoft);border:1px solid var(--red);border-radius:10px;padding:12px 14px;font-size:.85rem;margin-bottom:14px}
+
+/* Quiz */
+.q-box{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px}
+.q-opt{display:block;background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:11px 14px;margin:8px 0;cursor:pointer;transition:.12s}
+.q-opt:hover{border-color:var(--red)}
+.q-opt.sel{border-color:var(--red);background:var(--redsoft)}
+.q-opt.correct{border-color:#e8b74a;background:#3a2f10}
+.q-opt.wrong{border-color:#e0505c;background:#3a1418;opacity:.9}
+
+/* Whiteboard */
+#board-wrap{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+#board{display:block;width:100%;touch-action:none;cursor:crosshair;background:#fff}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer}
+.swatch.on{border-color:#fff;transform:scale(1.15)}
+
+/* Onboarding modal */
+.overlay{position:fixed;inset:0;background:rgba(5,6,9,.82);display:grid;place-items:center;z-index:50;padding:20px}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:18px;max-width:560px;width:100%;padding:26px;box-shadow:var(--shadow);max-height:92vh;overflow-y:auto}
+.steps{display:flex;gap:6px;margin-bottom:18px}
+.steps i{flex:1;height:5px;border-radius:999px;background:var(--bg2)}
+.steps i.on{background:var(--red)}
+
+/* οριζόντια κύλιση για φαρδύ περιεχόμενο (πίνακες) σε κινητά */
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+@media(max-width:820px){
+  .app{flex-direction:column}
+  .side{width:100%;height:auto;position:sticky;top:0;z-index:20;border-right:0;border-bottom:1px solid var(--line);padding:10px}
+  .brand{padding:2px 4px 10px}
+  /* Η πλοήγηση γίνεται οριζόντια μπάρα με κύλιση (μένει πάντα προσβάσιμη) */
+  .nav{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .nav button{width:auto;white-space:nowrap;flex:0 0 auto;padding:9px 12px}
+  .nav button.active{box-shadow:inset 0 -3px 0 var(--red)}
+  .side .tip{display:none}
+  .main{padding:16px}
+  .topbar h2{font-size:1.3rem}
+}
+@media(max-width:560px){
+  body{font-size:14.5px}
+  .main{padding:12px}
+  .card{padding:15px}
+  h2{font-size:1.2rem}
+  .row>*{min-width:100%}          /* τα πεδία φόρμας το ένα κάτω από το άλλο */
+  .g3,.g2{grid-template-columns:1fr}
+  .stat b{font-size:1.5rem}
+  .modal{padding:18px}
+  .btn{padding:11px 16px}         /* μεγαλύτεροι στόχοι αφής */
+  .chip,.nav button,.q-opt{min-height:42px;display:flex;align-items:center}
+  .book .cov{width:40px;height:54px}
+  .topbar .btn{padding:8px 12px;font-size:.82rem}
+}
+
+/* Μέγεθος γραμμάτων (κλιμακώνεται μέσω html font-size) & Light theme */
+html{font-size:15px}
+body{font-size:1rem}
+:root.theme-light{
+  --bg:#eef1f5; --bg2:#ffffff; --panel:#ffffff; --panel2:#eef2f7;
+  --line:#d7dee8; --txt:#18202c; --muted:#586372; --redsoft:#e7f0fb;
+  --shadow:0 6px 20px rgba(30,60,90,.12);
+}
+:root.theme-light body{background:var(--bg)}
+:root.theme-light .side{background:linear-gradient(180deg,#f7f9fc,#eef2f7)}
+:root.theme-light .q-opt.correct{background:#fff7e0}
+:root.theme-light .q-opt.wrong{background:#fde8ea;color:#7a1620}
+
+/* Print */
+@media print{
+  .side,.topbar .btn,.no-print,.nav{display:none!important}
+  body,.main{background:#fff;color:#000}
+  .card{box-shadow:none;border:1px solid #999;break-inside:avoid}
+  a{color:#000}
+  .q-opt{border:1px solid #999}
+  #print-area *{color:#000!important}
+  table th,table td{border-bottom:1px solid #999}
+}
+</style>
+</head>
+<body>
+
+<!-- ======================= ONBOARDING ======================= -->
+<div id="onboard" class="overlay hidden">
+  <div class="modal">
+    <div class="steps"><i class="on"></i><i></i><i></i><i></i></div>
+    <div id="ob-body"></div>
+    <div class="row no-print" style="margin-top:20px">
+      <button class="btn ghost" id="ob-back" style="flex:0 0 auto">← Πίσω</button>
+      <button class="btn" id="ob-next" style="flex:1">Επόμενο →</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <!-- ======================= SIDEBAR ======================= -->
+  <aside class="side no-print">
+    <div class="brand">
+      <div class="logo">Σ</div>
+      <div><b>ΣΧΟΛΕΙΟ 360°</b><small>Μελέτη &amp; Προετοιμασία</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-view="home" class="active"><span class="ic">🏠</span> Αρχική</button>
+      <button data-view="subjects"><span class="ic">📚</span> Μαθήματα &amp; Ύλη</button>
+      <button data-view="exams"><span class="ic">🎓</span> Πανελλήνιες / Κατατακτήριες</button>
+      <button data-view="syllabus"><span class="ic">📑</span> Εξεταστέα Ύλη</button>
+      <button data-view="careers"><span class="ic">🏛️</span> Σχολές &amp; Επαγγέλματα</button>
+      <button data-view="schedule"><span class="ic">🗓️</span> Πρόγραμμα Διαβάσματος</button>
+      <button data-view="library"><span class="ic">📖</span> Βιβλιοθήκη</button>
+      <button data-view="quiz"><span class="ic">📝</span> Διαγωνίσματα / Κουίζ</button>
+      <button data-view="board"><span class="ic">🖊️</span> Διαδραστικός Πίνακας</button>
+      <button data-view="notes"><span class="ic">📝</span> Σημειώσεις</button>
+      <button data-view="pomodoro"><span class="ic">🍅</span> Χρονόμετρο Μελέτης</button>
+      <button data-view="settings"><span class="ic">⚙️</span> Προφίλ &amp; Ρυθμίσεις</button>
+    </nav>
+    <div class="tip">💡 Όλα αποθηκεύονται τοπικά στη συσκευή σου. Η εφαρμογή δουλεύει χωρίς internet· τα <b>δικά σου PDF</b> ανοίγουν offline (Βιβλιοθήκη), οι εξωτερικοί σύνδεσμοι βιβλίων χρειάζονται σύνδεση.</div>
+    <div style="margin-top:10px;padding:8px;text-align:center;font-size:.72rem;color:var(--muted)">© by Chronis Makris</div>
+  </aside>
+
+  <!-- ======================= MAIN ======================= -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2 id="view-title">Αρχική</h2>
+        <div class="who" id="who"></div>
+      </div>
+      <div class="row no-print" style="flex:0 0 auto;gap:8px">
+        <button class="btn ghost" id="fs-btn" title="Πλήρης οθόνη" onclick="toggleFullscreen()">⛶ Πλήρης οθόνη</button>
+        <button class="btn ghost" onclick="window.print()">🖨️ Εκτύπωση</button>
+      </div>
+    </div>
+    <div id="views"></div>
+  </main>
+</div>
+
+<!-- Πλήρης βάση σχολών (763 τμήματα, βάσεις 2026 & 2025 — πηγή AeiTei.gr/Υπ. Παιδείας) -->
+<script src="schools-data.js"></script>
+<script>
+/* =========================================================================
+   ΣΧΟΛΕΙΟ 360° — offline study companion
+   Δεδομένα, κατάσταση (localStorage), αυτόματο πρόγραμμα, κουίζ, πίνακας.
+   ========================================================================= */
+
+/* ---------- STATE ---------- */
+const LS='sxoleio360';
+const DEFAULT={
+  profile:null,           // {name,type,grade,goal,field,ktDept,ktSubjects,hoursDay,daysWeek,targetDate,strong[],weak[]}
+  progress:{},            // subjectKey -> percent
+  quizScores:[],          // {subject,score,total,date}
+  customBooks:[],         // {title,author,link,note}
+  schedule:null,          // generated plan
+  done:{},                // "week-day-idx" -> true (schedule checkboxes)
+  favorites:[],           // αγαπημένες σχολές [{id,d,inst,city,f,b26,b25}]
+  notes:{},               // σημειώσεις ανά μάθημα {subject: text}
+  wrong:{},               // λάθος ερωτήσεις ανά μάθημα {subject:[q...]}
+  customCards:[],         // flashcards χρήστη [{subject,front,back}]
+  cardKnown:{},           // {cardKey:true} (legacy)
+  cardSR:{},              // spaced repetition {cardKey:{reps,interval,ease,due}}
+  prefs:{theme:'dark',font:1}, // θέμα & μέγεθος γραμμάτων
+  pomodoros:0,            // ολοκληρωμένες συνεδρίες μελέτης
+  stats:{lastActive:'',streak:0,cardsReviewed:0} // σερί ημερών & στατιστικά
+};
+let S=load();
+function load(){try{return Object.assign(JSON.parse(JSON.stringify(DEFAULT)),JSON.parse(localStorage.getItem(LS))||{})}catch(e){return JSON.parse(JSON.stringify(DEFAULT))}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){/* localStorage μη διαθέσιμο (π.χ. ιδιωτική περιήγηση) — συνεχίζουμε χωρίς αποθήκευση */}}
+function applyPrefs(){
+  const p=S.prefs||(S.prefs={theme:'dark',font:1});
+  document.documentElement.classList.toggle('theme-light', p.theme==='light');
+  document.documentElement.style.fontSize=(15*(p.font||1))+'px';
+}
+function toggleFullscreen(){
+  const d=document, el=d.documentElement;
+  try{
+    if(!d.fullscreenElement && !d.webkitFullscreenElement){
+      (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen||function(){alert('Η συσκευή σου δεν υποστηρίζει πλήρη οθόνη από τον browser. Αν το έχεις εγκαταστήσει ως εφαρμογή (Προσθήκη στην αρχική οθόνη), ανοίγει ήδη χωρίς μπάρα.');}).call(el);
+    } else {
+      (d.exitFullscreen||d.webkitExitFullscreen||d.msExitFullscreen||function(){}).call(d);
+    }
+  }catch(e){}
+}
+document.addEventListener('fullscreenchange',()=>{const b=document.getElementById('fs-btn');if(b)b.textContent=document.fullscreenElement?'⤢ Έξοδος':'⛶ Πλήρης οθόνη';});
+
+/* ---------- CURRICULUM DATA ----------
+   ebooks.edu.gr classcodes: K07-K09 Γυμνάσιο, K10-K12 Λύκειο */
+const EBOOK=c=>`https://ebooks.edu.gr/ebooks/v2/class-main.jsp?classcode=${c}`;
+const LEVELS=[
+ {key:'gym', name:'Γυμνάσιο', grades:[
+   {g:'Α΄ Γυμνασίου', code:'K07', subjects:['Νεοελληνική Γλώσσα','Νεοελληνική Λογοτεχνία','Αρχαία Ελληνική Γλώσσα','Αρχαία Ελληνικά (από μετάφραση)','Ιστορία','Μαθηματικά','Φυσική','Βιολογία','Γεωγραφία','Θρησκευτικά','Αγγλικά','Β΄ Ξένη Γλώσσα','Πληροφορική','Τεχνολογία','Οικιακή Οικονομία','Μουσική','Καλλιτεχνικά','Φυσική Αγωγή']},
+   {g:'Β΄ Γυμνασίου', code:'K08', subjects:['Νεοελληνική Γλώσσα','Νεοελληνική Λογοτεχνία','Αρχαία Ελληνική Γλώσσα','Αρχαία Ελληνικά (από μετάφραση)','Ιστορία','Μαθηματικά','Φυσική','Χημεία','Βιολογία','Γεωγραφία','Θρησκευτικά','Αγγλικά','Β΄ Ξένη Γλώσσα','Πληροφορική','Τεχνολογία','Μουσική','Καλλιτεχνικά','Φυσική Αγωγή']},
+   {g:'Γ΄ Γυμνασίου', code:'K09', subjects:['Νεοελληνική Γλώσσα','Νεοελληνική Λογοτεχνία','Αρχαία Ελληνική Γλώσσα','Αρχαία Ελληνικά (από μετάφραση)','Ιστορία','Μαθηματικά','Φυσική','Χημεία','Βιολογία','Θρησκευτικά','Αγγλικά','Β΄ Ξένη Γλώσσα','Πληροφορική','Κοινωνική &amp; Πολιτική Αγωγή','Μουσική','Καλλιτεχνικά','Φυσική Αγωγή']}
+ ]},
+ {key:'lyk', name:'Λύκειο (ΓΕΛ)', grades:[
+   {g:'Α΄ Λυκείου', code:'K10', subjects:['Νεοελληνική Γλώσσα &amp; Λογοτεχνία','Αρχαία Ελληνική Γλώσσα','Ιστορία','Άλγεβρα','Γεωμετρία','Φυσική','Χημεία','Βιολογία','Πολιτική Παιδεία','Θρησκευτικά','Ξένη Γλώσσα','Φυσική Αγωγή']},
+   {g:'Β΄ Λυκείου', code:'K11', subjects:['Νεοελληνική Γλώσσα &amp; Λογοτεχνία','Αρχαία (Προσ. Ανθρωπιστικών)','Λατινικά (Προσ.)','Ιστορία','Άλγεβρα','Γεωμετρία','Μαθηματικά Προσ. (Θετικών)','Φυσική','Χημεία','Βιολογία','Πολιτική Παιδεία','Θρησκευτικά','Ξένη Γλώσσα']},
+   {g:'Γ΄ Λυκείου', code:'K12', subjects:['Νεοελληνική Γλώσσα &amp; Λογοτεχνία','Αρχαία Ελληνικά (Προσ.)','Ιστορία (Προσ.)','Λατινικά (Προσ.)','Μαθηματικά (Προσ.)','Φυσική (Προσ.)','Χημεία (Προσ.)','Βιολογία (Προσ.)','Αρχές Οικονομικής Θεωρίας (ΑΟΘ)','Πληροφορική (ΑΕΠΠ)','Θρησκευτικά','Ξένη Γλώσσα']}
+ ]}
+];
+
+/* ---------- PANHELLENIC (Γ΄ Λυκείου) ---------- */
+const FIELDS=[
+ {n:'1ο Πεδίο — Ανθρωπιστικές, Νομικές &amp; Κοινωνικές Επιστήμες',
+  group:'Ομάδα Προσανατολισμού Ανθρωπιστικών Σπουδών',
+  subs:['Νεοελληνική Γλώσσα &amp; Λογοτεχνία','Αρχαία Ελληνικά','Ιστορία','Λατινικά'],
+  ex:'Νομική, Φιλολογία, Ψυχολογία, Παιδαγωγικά, ΜΜΕ, Κοινωνιολογία'},
+ {n:'2ο Πεδίο — Θετικές &amp; Τεχνολογικές Επιστήμες',
+  group:'Ομάδα Προσανατολισμού Θετικών Σπουδών',
+  subs:['Νεοελληνική Γλώσσα &amp; Λογοτεχνία','Φυσική','Χημεία','Μαθηματικά'],
+  ex:'Πολυτεχνικές σχολές, Μαθηματικά, Φυσική, Πληροφορική, Χημικοί'},
+ {n:'3ο Πεδίο — Επιστήμες Υγείας &amp; Ζωής',
+  group:'Ομάδα Προσανατολισμού Θετικών Σπουδών (κατεύθ. Υγείας)',
+  subs:['Νεοελληνική Γλώσσα &amp; Λογοτεχνία','Φυσική','Χημεία','Βιολογία'],
+  ex:'Ιατρική, Οδοντιατρική, Φαρμακευτική, Νοσηλευτική, Βιολογία, Κτηνιατρική'},
+ {n:'4ο Πεδίο — Επιστήμες Οικονομίας &amp; Πληροφορικής',
+  group:'Ομάδα Προσανατολισμού Σπουδών Οικονομίας &amp; Πληροφορικής',
+  subs:['Νεοελληνική Γλώσσα &amp; Λογοτεχνία','Μαθηματικά','Αρχές Οικονομικής Θεωρίας','Πληροφορική'],
+  ex:'Οικονομικά, Διοίκηση Επιχειρήσεων, Πληροφορική, Στατιστική, Λογιστική'}
+];
+
+/* ---------- ΕΞΕΤΑΣΤΕΑ ΥΛΗ (Γ΄ Λυκείου, Πανελλαδικές) ----------
+   Πηγή αναλυτικών κεφαλαίων: edu.klimaka.gr / Υπουργείο Παιδείας (ΙΕΠ).
+   ΠΡΟΣΟΧΗ: η επίσημη ύλη ανακοινώνεται κάθε έτος — τα κεφάλαια είναι
+   ενδεικτικά της πιο πρόσφατης ύλης· επιβεβαίωσε με τους συνδέσμους. */
+const SYLLABUS_YEARS=['2026-2027','2025-2026'];
+const SYLLABUS_SRC={
+  overview:'https://edu.klimaka.gr/panelladikes/exetaseis/383-panellhnies-exetastea-ylh-panelladikwn',
+  iep:'https://www.iep.edu.gr/el/',
+  minedu:'https://www.minedu.gov.gr/'
+};
+const SYLLABUS={
+ 'Νεοελληνική Γλώσσα & Λογοτεχνία':{book:'Έκφραση–Έκθεση / Κείμενα Νεοελληνικής Λογοτεχνίας',
+   units:['Κατανόηση & ερμηνεία μη λογοτεχνικού κειμένου','Περίληψη κειμένου','Λεξιλόγιο – δομή – συνοχή','Παραγωγή λόγου / έκθεση (κειμενικά είδη)','Αδίδακτο λογοτεχνικό κείμενο: ερμηνεία & σχολιασμός'],
+   link:SYLLABUS_SRC.overview},
+ 'Αρχαία Ελληνικά':{book:'Φιλοσοφικός Λόγος (Πλάτων, Αριστοτέλης) + Φάκελος Υλικού',
+   units:['Εισαγωγή: Σωκράτης – Πλάτων','Πλάτων, «Πρωταγόρας» (μύθος)','Πλάτων, «Πολιτεία» (αλληγορία σπηλαίου)','Αριστοτέλης, «Ηθικά Νικομάχεια» (αρετή–μεσότητα)','Αριστοτέλης, «Πολιτικά» (πόλις)','Φάκελος Υλικού: 6 θεματικές ενότητες','Αδίδακτο κείμενο (αττική διάλεκτος) + Γραμματική/Συντακτικό'],
+   link:'https://edu.klimaka.gr/panelladikes/exetastea-ylh-lykeiou/76-exetastea-ylh-archaia-ellhnika-thewrhtikhs'},
+ 'Ιστορία':{book:'Θέματα Νεοελληνικής Ιστορίας (Γ΄ Λυκείου)',
+   units:['Ι. Από την αγροτική οικονομία στην αστικοποίηση','ΙΙ. Η διαμόρφωση & λειτουργία των πολιτικών κομμάτων (1821-1936)','ΙΙΙ. Το προσφυγικό ζήτημα στην Ελλάδα (1821-1930)','IV. Το Κρητικό Ζήτημα (τέλη 19ου–αρχές 20ού αι.)','Παρευξείνιος Ελληνισμός (κατά περίπτωση)'],
+   link:SYLLABUS_SRC.overview},
+ 'Λατινικά':{book:'Λατινικά Γ΄ Λυκείου + Φάκελος Υλικού',
+   units:['Επιλεγμένα κείμενα/ενότητες (κατά την ετήσια απόφαση)','Γραμματική: κλίσεις ουσιαστικών/επιθέτων, αντωνυμίες','Ρήμα: χρόνοι & εγκλίσεις','Συντακτικό: πτώσεις, προτάσεις, μετοχές'],
+   link:SYLLABUS_SRC.overview},
+ 'Μαθηματικά':{book:'Μαθηματικά Προσανατολισμού Γ΄ Λυκείου',
+   units:['Κεφ. 1 – Όριο & Συνέχεια συνάρτησης (συναρτήσεις, μονοτονία, αντίστροφη, όρια, συνέχεια)','Κεφ. 2 – Διαφορικός Λογισμός (παράγωγος, κανόνες, Θ.Μ.Τ., μονοτονία/ακρότατα, κυρτότητα, ασύμπτωτες, De l’ Hospital, μελέτη συνάρτησης)','Κεφ. 3 – Ολοκληρωτικός Λογισμός (αρχική συνάρτηση, ορισμένο ολοκλήρωμα, εμβαδόν χωρίου)'],
+   link:'https://edu.klimaka.gr/panelladikes/exetastea-ylh-lykeiou/82-exetastea-ylh-mathhmatika-thetikhs-technologikhs-katevthynshs'},
+ 'Φυσική':{book:'Φυσική Προσανατολισμού Γ΄ Λυκείου',
+   units:['Κεφ. 1 – Ταλαντώσεις (Α.Α.Τ., ηλεκτρικές, φθίνουσες, εξαναγκασμένες, σύνθεση)','Κεφ. 2 – Κύματα (μηχανικά, συμβολή, στάσιμα, φαινόμενο Doppler, ηλεκτρομαγνητικά)','Κεφ. 4 – Μηχανική στερεού σώματος (ροπή, ροπή αδράνειας, στροφορμή, κυλίσεις)','Κεφ. 5 – Κρούσεις & φαινόμενο Doppler'],
+   link:'https://edu.klimaka.gr/panelladikes/exetastea-ylh-lykeiou/80-exetastea-ylh-fysikh-thetikhs-technologikhs'},
+ 'Χημεία':{book:'Χημεία Προσανατολισμού Γ΄ Λυκείου',
+   units:['Ηλεκτρονιακή δομή των ατόμων & Περιοδικός Πίνακας','Θερμοχημεία (ενθαλπία, νόμος Hess)','Χημική κινητική','Χημική ισορροπία','Οξέα – Βάσεις & Ιοντική ισορροπία (pH, ρυθμιστικά, ογκομέτρηση)','Οργανική Χημεία (αντιδράσεις, ισομέρεια)'],
+   link:SYLLABUS_SRC.overview},
+ 'Βιολογία':{book:'Βιολογία Προσανατολισμού Γ΄ Λυκείου (Τεύχη Α΄ & Β΄)',
+   units:['Χημική σύσταση του κυττάρου','Το κύτταρο – θεμελιώδης μονάδα της ζωής','Μεταβολισμός','Το γενετικό υλικό – Αντιγραφή/έκφραση/ρύθμιση','Τεχνολογία ανασυνδυασμένου DNA','Μενδελική κληρονομικότητα – Μεταλλάξεις','Αρχές & μεθοδολογία Βιοτεχνολογίας','Εφαρμογές Βιοτεχνολογίας (Ιατρική, γεωργία/κτηνοτροφία)'],
+   link:'https://edu.klimaka.gr/panelladikes/exetastea-ylh-lykeiou/83-exetastea-ylh-viologia-thetikhs-katevthynshs'},
+ 'Αρχές Οικονομικής Θεωρίας':{book:'Αρχές Οικονομικής Θεωρίας (ΑΟΘ) Γ΄ Λυκείου',
+   units:['Κεφ. 1 – Βασικές οικονομικές έννοιες','Κεφ. 2 – Η ζήτηση των αγαθών','Κεφ. 3 – Η παραγωγή της επιχείρησης & το κόστος','Κεφ. 4 – Η προσφορά των αγαθών','Κεφ. 5 – Ο προσδιορισμός των τιμών'],
+   link:SYLLABUS_SRC.overview},
+ 'Πληροφορική':{book:'Πληροφορική Γ΄ Λυκείου (πρώην ΑΕΠΠ)',
+   units:['Ανάλυση προβλήματος & αλγόριθμοι','Δομές δεδομένων (πίνακες)','Δομές ελέγχου/επιλογής','Δομές επανάληψης','Υποπρογράμματα (διαδικασίες/συναρτήσεις)','Στοίβα – Ουρά','Αναζήτηση & ταξινόμηση'],
+   link:SYLLABUS_SRC.overview}
+};
+const canon=s=>String(s).replace(/&amp;/g,'&');
+
+/* ---------- ΘΕΜΑΤΑ ΠΡΟΗΓΟΥΜΕΝΩΝ ΕΤΩΝ (αρχεία θεμάτων & λύσεων) ---------- */
+const PASTPAPERS=[
+ {t:'Υπουργείο Παιδείας — Θέματα & Απαντήσεις',d:'Τα επίσημα θέματα και οι ενδεικτικές απαντήσεις κάθε χρονιάς.',u:'https://www.minedu.gov.gr/',ic:'🏛️'},
+ {t:'edu.klimaka.gr — Πανελλαδικές',d:'Ύλη, πρόγραμμα εξετάσεων και θέματα ανά μάθημα.',u:'https://edu.klimaka.gr/panelladikes',ic:'🗂️'},
+ {t:'Αρχείο Θεμάτων 2016–σήμερα (ανά μάθημα/έτος)',d:'Φιλτράρισμα θεμάτων ανά μάθημα, χρονιά και εξεταστική περίοδο.',u:'https://paideianet.com/arxeio-thematon/',ic:'📚'},
+ {t:'ΟΕΦΕ — Αρχείο θεμάτων πανελλαδικών',d:'Θέματα πανελλαδικών με μηχανή αναζήτησης.',u:'https://www.oefe.gr/el/normal/thematapanelliniwn.aspx',ic:'🔎'},
+ {t:'Θέματα & Λύσεις 2017–2026 (ΓΕΛ & ΕΠΑΛ)',d:'Θέματα με αναλυτικές λύσεις ανά έτος.',u:'https://elix.edu.gr/themata-panellinion-exetaseon/',ic:'✅'}
+];
+
+/* ---------- ΣΧΟΛΕΣ & ΕΠΑΓΓΕΛΜΑΤΑ ΑΝΑ ΠΕΔΙΟ ----------
+   field: 0=1ο,1=2ο,2=3ο,3=4ο πεδίο (δείκτης στο FIELDS)
+   base: μόρια εισαγωγής ΓΕΛ 90% ημερήσια ανά έτος (πηγή AeiTei.gr / Υπ. Παιδείας)
+   2026 ανακοινώθηκαν 23/7/2026. Ενδεικτική επιλογή δημοφιλών τμημάτων. */
+const SCHOOLS=[
+ // ---- 1ο ΠΕΔΙΟ ----
+ {f:0,n:'Νομική',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Αστικό Δίκαιο','Ποινικό Δίκαιο','Συνταγματικό & Δημόσιο Δίκαιο','Εμπορικό Δίκαιο','Διεθνές Δίκαιο','Πολιτική Δικονομία'],
+   jobs:['Δικηγόρος','Δικαστής / Εισαγγελέας','Συμβολαιογράφος','Νομικός σύμβουλος','Διπλωματικό σώμα'],
+   base:{'22':17950,'23':18125,'24':18025,'25':17875,'26':17875}},
+ {f:0,n:'Νομική',inst:'ΑΠΘ (Θεσσαλονίκη)',
+   courses:['Αστικό Δίκαιο','Ποινικό Δίκαιο','Δημόσιο Δίκαιο','Εμπορικό Δίκαιο','Διεθνές & Ευρωπαϊκό Δίκαιο'],
+   jobs:['Δικηγόρος','Δικαστικός','Συμβολαιογράφος','Νομικός σύμβουλος επιχειρήσεων'],
+   base:{'22':17150,'23':17640,'24':17340,'25':17280,'26':17260}},
+ {f:0,n:'Ψυχολογία',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Γνωστική Ψυχολογία','Αναπτυξιακή Ψυχολογία','Κοινωνική Ψυχολογία','Κλινική Ψυχολογία','Μεθοδολογία & Στατιστική','Νευροψυχολογία'],
+   jobs:['Ψυχολόγος','Σχολικός ψυχολόγος','Σύμβουλος ψυχικής υγείας','Διαχείριση Ανθρώπινου Δυναμικού','Ερευνητής'],
+   base:{'22':17420,'23':17845,'24':17595,'25':17475,'26':17395}},
+ {f:0,n:'Φιλολογία',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Αρχαία Ελληνική Φιλολογία','Νεοελληνική Φιλολογία','Γλωσσολογία','Λατινική Φιλολογία','Βυζαντινή Φιλολογία'],
+   jobs:['Καθηγητής/τρια Φιλόλογος','Επιμέλεια εκδόσεων','Έρευνα','Αρχεία & Βιβλιοθήκες'],
+   base:{'22':13526,'23':13012,'24':12660,'25':11304,'26':11160}},
+ {f:0,n:'Παιδαγωγικό Δημοτικής Εκπαίδευσης',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Παιδαγωγική','Διδακτική Μεθοδολογία','Ψυχολογία της Μάθησης','Διδακτική Γλώσσας & Μαθηματικών','Ειδική Αγωγή'],
+   jobs:['Δάσκαλος/α Δημοτικού','Εκπαιδευτικός Ειδικής Αγωγής','Σχεδιασμός εκπαιδευτικού υλικού'],
+   base:{'22':15750,'23':16225,'24':16100,'25':16250,'26':15950}},
+ {f:0,n:'Επικοινωνίας & ΜΜΕ',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Δημοσιογραφία','Διαφήμιση & Δημόσιες Σχέσεις','Ψηφιακά Μέσα','Θεωρία Επικοινωνίας','Κοινωνιολογία των ΜΜΕ'],
+   jobs:['Δημοσιογράφος','Υπεύθυνος Επικοινωνίας / PR','Marketing & Διαφήμιση','Παραγωγή περιεχομένου'],
+   base:{'22':15950,'23':16370,'24':15840,'25':16110,'26':16070}},
+ {f:0,n:'Ιστορίας & Αρχαιολογίας',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Αρχαία / Βυζαντινή / Νεότερη Ιστορία','Προϊστορική & Κλασική Αρχαιολογία','Ιστορία της Τέχνης','Μουσειολογία'],
+   jobs:['Αρχαιολόγος','Καθηγητής/τρια','Μουσεία & Εφορείες Αρχαιοτήτων','Έρευνα'],
+   base:{'22':12422,'23':12614,'24':11958,'25':11838,'26':11660}},
+ // ---- 2ο ΠΕΔΙΟ ----
+ {f:1,n:'Ηλεκτρολόγων Μηχανικών & Μηχ. Υπολογιστών',inst:'ΕΜΠ (Αθήνα)',
+   courses:['Ηλεκτρικά Κυκλώματα','Ηλεκτρονική','Συστήματα Ηλεκτρικής Ισχύος','Τηλεπικοινωνίες','Προγραμματισμός','Σήματα & Αυτόματος Έλεγχος'],
+   jobs:['Ηλεκτρολόγος Μηχανικός','Μηχανικός Λογισμικού','Ενέργεια & Δίκτυα','Τηλεπικοινωνίες','Ρομποτική / Τεχνητή Νοημοσύνη'],
+   base:{'22':18470,'23':18820,'24':18490,'25':18390,'26':18880}},
+ {f:1,n:'Μηχανολόγων Μηχανικών',inst:'ΕΜΠ (Αθήνα)',
+   courses:['Θερμοδυναμική','Μηχανική Ρευστών','Αντοχή Υλικών','Μηχανές & Ενεργειακά Συστήματα','Σχεδίαση (CAD)'],
+   jobs:['Μηχανολόγος Μηχανικός','Ενεργειακά συστήματα / HVAC','Αυτοκίνηση','Βιομηχανική παραγωγή'],
+   base:{'22':18196,'23':18554,'24':18230,'25':18128,'26':18738}},
+ {f:1,n:'Πολιτικών Μηχανικών',inst:'ΕΜΠ (Αθήνα)',
+   courses:['Στατική','Αντοχή Υλικών','Οπλισμένο Σκυρόδεμα','Γεωτεχνική','Υδραυλική','Συγκοινωνιακά Έργα'],
+   jobs:['Πολιτικός Μηχανικός','Κατασκευές & Τεχνικά Έργα','Μελέτες / Αντισεισμικός σχεδιασμός'],
+   base:{'22':17094,'23':17497,'24':16832,'25':17265,'26':18088}},
+ {f:1,n:'Αρχιτεκτόνων Μηχανικών',inst:'ΕΜΠ (Αθήνα) · ειδικό μάθ. Σχέδιο',
+   courses:['Αρχιτεκτονικός Σχεδιασμός','Ιστορία Αρχιτεκτονικής','Πολεοδομία','Οικοδομική','Εικαστικά'],
+   jobs:['Αρχιτέκτονας','Πολεοδόμος','Σχεδιασμός εσωτερικών χώρων','Αναστηλώσεις'],
+   base:{'22':19285,'23':19950,'24':19335,'25':20380,'26':20995}},
+ {f:1,n:'Χημικών Μηχανικών',inst:'ΕΜΠ (Αθήνα)',
+   courses:['Φυσικοχημεία','Φαινόμενα Μεταφοράς','Χημικές Διεργασίες','Θερμοδυναμική','Σχεδιασμός Βιομηχανικών Εγκαταστάσεων'],
+   jobs:['Χημικός Μηχανικός','Βιομηχανία (τρόφιμα/φάρμακα/πετρέλαιο)','Ενέργεια','Περιβάλλον'],
+   base:{'22':17570,'23':18155,'24':17510,'25':17775,'26':18455}},
+ {f:1,n:'Πληροφορικής & Τηλεπικοινωνιών',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Προγραμματισμός','Δομές Δεδομένων & Αλγόριθμοι','Βάσεις Δεδομένων','Δίκτυα','Λειτουργικά Συστήματα','Τεχνητή Νοημοσύνη'],
+   jobs:['Μηχανικός Λογισμικού','Data Scientist','Κυβερνοασφάλεια','Δίκτυα','Τεχνητή Νοημοσύνη'],
+   base:{'22':17385,'23':17785,'24':17075,'25':16955,'26':17680}},
+ {f:1,n:'Μαθηματικών',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Μαθηματική Ανάλυση','Άλγεβρα','Γεωμετρία','Πιθανότητες & Στατιστική','Αριθμητική Ανάλυση'],
+   jobs:['Καθηγητής/τρια Μαθηματικών','Data / Αναλογιστής','Πληροφορική','Χρηματοοικονομικά','Έρευνα'],
+   base:{'22':14140,'23':14725,'24':14405,'25':14500,'26':15850}},
+ {f:1,n:'Φυσικής',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Μηχανική','Ηλεκτρομαγνητισμός','Κβαντική Φυσική','Θερμοδυναμική','Αστροφυσική','Ηλεκτρονική'],
+   jobs:['Φυσικός / Καθηγητής','Έρευνα','Ιατρική Φυσική','Μετεωρολογία','Τεχνολογία'],
+   base:{'22':15217,'23':14634,'24':14183,'25':14513,'26':15838}},
+ // ---- 3ο ΠΕΔΙΟ ----
+ {f:2,n:'Ιατρικής',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Ανατομία','Φυσιολογία','Βιοχημεία','Παθολογία','Φαρμακολογία','Κλινική Άσκηση'],
+   jobs:['Ιατρός (ειδικότητες)','Χειρουργός','Ερευνητής','Δημόσια Υγεία'],
+   base:{'22':18800,'23':19000,'24':18775,'25':18775,'26':18900}},
+ {f:2,n:'Ιατρικής',inst:'ΑΠΘ (Θεσσαλονίκη)',
+   courses:['Ανατομία','Φυσιολογία','Βιοχημεία','Παθολογία','Φαρμακολογία','Κλινική Άσκηση'],
+   jobs:['Ιατρός (ειδικότητες)','Χειρουργός','Ερευνητής','Δημόσια Υγεία'],
+   base:{'22':18550,'23':18800,'24':18550,'25':18575,'26':18750}},
+ {f:2,n:'Οδοντιατρικής',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Ανατομία','Οδοντική Χειρουργική','Ορθοδοντική','Περιοδοντολογία','Προσθετική'],
+   jobs:['Οδοντίατρος','Ορθοδοντικός','Στοματική & Γναθοπροσωπική Χειρουργική'],
+   base:{'22':17975,'23':18125,'24':17850,'25':17900,'26':18250}},
+ {f:2,n:'Φαρμακευτικής',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Φαρμακολογία','Φαρμακευτική Χημεία','Φαρμακογνωσία','Φαρμακοτεχνία','Τοξικολογία'],
+   jobs:['Φαρμακοποιός','Φαρμακοβιομηχανία','Έρευνα & Ποιοτικός Έλεγχος','Κλινικές Μελέτες'],
+   base:{'22':17910,'23':18090,'24':17880,'25':17880,'26':18100}},
+ {f:2,n:'Νοσηλευτικής',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Παθολογική & Χειρουργική Νοσηλευτική','Ανατομία - Φυσιολογία','Φαρμακολογία','Δημόσια Υγεία'],
+   jobs:['Νοσηλευτής/τρια','Επισκέπτης/τρια Υγείας','Διοίκηση Μονάδων Υγείας'],
+   base:{'22':15225,'23':14875,'24':14375,'25':14400,'26':14800}},
+ {f:2,n:'Βιολογίας',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Μοριακή Βιολογία','Γενετική','Βιοχημεία','Οικολογία','Μικροβιολογία','Ζωολογία & Βοτανική'],
+   jobs:['Βιολόγος','Έρευνα & Εργαστήρια','Βιοτεχνολογία','Καθηγητής/τρια','Περιβάλλον'],
+   base:{'22':17552,'23':17703,'24':17493,'25':17428,'26':17695}},
+ {f:2,n:'Κτηνιατρικής',inst:'ΑΠΘ (Θεσσαλονίκη)',
+   courses:['Ανατομία Ζώων','Φυσιολογία','Παθολογία','Χειρουργική','Ζωοτεχνία','Υγιεινή Τροφίμων'],
+   jobs:['Κτηνίατρος','Κτηνοτροφία','Έλεγχος Τροφίμων','Έρευνα'],
+   base:{'22':17671,'23':17812,'24':17692,'25':17657,'26':17867}},
+ {f:2,n:'Φυσικοθεραπείας',inst:'ΠΑΔΑ (Παν. Δυτ. Αττικής)',
+   courses:['Ανατομία','Κινησιολογία','Φυσικοθεραπευτικές Τεχνικές','Μυοσκελετική & Νευρολογική Αποκατάσταση'],
+   jobs:['Φυσικοθεραπευτής/τρια','Αθλητική Αποκατάσταση','Κλινικές & Κέντρα Αποκατάστασης'],
+   base:{'22':15925,'23':15825,'24':15525,'25':15575,'26':16075}},
+ // ---- 4ο ΠΕΔΙΟ ----
+ {f:3,n:'Οικονομικής Επιστήμης',inst:'ΕΚΠΑ (Αθήνα)',
+   courses:['Μικροοικονομική','Μακροοικονομική','Στατιστική','Οικονομετρία','Δημόσια Οικονομικά'],
+   jobs:['Οικονομολόγος','Τραπεζικός','Οικονομικός αναλυτής','Δημόσιος τομέας','Έρευνα'],
+   base:{'22':13428,'23':13818,'24':13574,'25':13896,'26':13832}},
+ {f:3,n:'Λογιστικής & Χρηματοοικονομικής',inst:'ΟΠΑ (Οικ. Παν. Αθηνών)',
+   courses:['Λογιστική','Χρηματοοικονομική','Ελεγκτική','Φορολογία','Χρηματοοικονομική Ανάλυση'],
+   jobs:['Λογιστής / Φοροτεχνικός','Ελεγκτής (Auditor)','Χρηματοοικονομικός Αναλυτής','Τράπεζες'],
+   base:{'22':15695,'23':16200,'24':15340,'25':15775,'26':15925}},
+ {f:3,n:'Διοικητικής Επιστήμης & Τεχνολογίας',inst:'ΟΠΑ (Οικ. Παν. Αθηνών)',
+   courses:['Management','Επιχειρησιακή Έρευνα','Πληροφοριακά Συστήματα','Marketing','Ανάλυση Δεδομένων'],
+   jobs:['Στέλεχος Διοίκησης','Σύμβουλος Επιχειρήσεων','Business / Data Analyst','Logistics'],
+   base:{'22':17925,'23':18350,'24':18175,'25':18400,'26':18425}},
+ {f:3,n:'Στατιστικής',inst:'ΟΠΑ (Οικ. Παν. Αθηνών)',
+   courses:['Πιθανότητες','Στατιστική Συμπερασματολογία','Οικονομετρία','Ανάλυση Δεδομένων','Αναλογιστικά'],
+   jobs:['Στατιστικός','Data Scientist','Αναλογιστής','Έρευνα Αγοράς'],
+   base:{'22':13828,'23':14268,'24':13982,'25':14440,'26':14940}},
+ {f:3,n:'Πληροφορικής',inst:'ΑΠΘ (Θεσσαλονίκη)',
+   courses:['Προγραμματισμός','Αλγόριθμοι','Βάσεις Δεδομένων','Δίκτυα','Μηχανική Μάθηση'],
+   jobs:['Μηχανικός Λογισμικού','Data Scientist','Κυβερνοασφάλεια','Ανάπτυξη εφαρμογών'],
+   base:{'22':17090,'23':17730,'24':17440,'25':17720,'26':17740}},
+ {f:3,n:'Οργάνωσης & Διοίκησης Επιχειρήσεων',inst:'Παν. Πειραιά',
+   courses:['Management','Marketing','Χρηματοοικονομική','Λογιστική','Επιχειρηματικότητα'],
+   jobs:['Στέλεχος Επιχειρήσεων','Marketing','Ανθρώπινο Δυναμικό','Πωλήσεις','Επιχειρηματίας'],
+   base:{'22':15840,'23':16390,'24':16180,'25':16620,'26':16360}}
+];
+const SCHOOLS_SRC='https://aeitei.gr/';
+
+/* ---------- LIBRARY (public domain / free) ---------- */
+const LIBSOURCES=[
+ {t:'Ανοικτή Βιβλιοθήκη (openbook.gr)',d:'Δωρεάν & νόμιμα ελληνικά e-books (PDF/EPUB) — public domain λογοτεχνία, Καβάφης, Παπαδιαμάντης κ.ά.',u:'https://www.openbook.gr/tag/public-domain/',ic:'📚'},
+ {t:'Μικρός Απόπλους (mikrosapoplous.gr)',d:'Πλήρη αρχαία ελληνικά κείμενα με μετάφραση — Όμηρος, τραγικοί, φιλόσοφοι.',u:'http://www.mikrosapoplous.gr/',ic:'🏛️'},
+ {t:'Σελίδες του Σαραντάκου',d:'Νεοελληνική λογοτεχνία & γλώσσα online (Ροΐδης, Βιζυηνός, ποίηση).',u:'https://www.sarantakos.com/',ic:'✒️'},
+ {t:'Project Gutenberg — Greek',d:'Χιλιάδες δωρεάν βιβλία, ελληνική συλλογή (public domain, διεθνής λογοτεχνία).',u:'https://www.gutenberg.org/browse/languages/el',ic:'🌍'},
+ {t:'Wikisource Ελληνικά',d:'Ελεύθερη βιβλιοθήκη πρωτότυπων κειμένων στα ελληνικά.',u:'https://el.wikisource.org/',ic:'📜'},
+ {t:'Εθνική Βιβλιοθήκη (NLG) — Ψηφιακή',d:'Ψηφιοποιημένες συλλογές, εφημερίδες, σπάνια βιβλία.',u:'https://www.nlg.gr/',ic:'🇬🇷'},
+ {t:'Σχολικά βιβλία — ebooks.edu.gr',d:'Όλα τα σχολικά βιβλία Δημοτικού–Λυκείου σε html/pdf (Υπουργείο Παιδείας).',u:'https://ebooks.edu.gr/ebooks/v2/allmaterial.jsp',ic:'🏫'},
+ {t:'Φωτόδεντρο',d:'Εθνικό αποθετήριο μαθησιακών αντικειμένων — διαδραστικό εκπαιδευτικό υλικό.',u:'http://photodentro.edu.gr/',ic:'🌳'}
+];
+const LITSUGGEST=[ /* κλασικά αναγνώσματα λογοτεχνίας */
+ {title:'Άπαντα (Ποιήματα)',author:'Κ. Π. Καβάφης',u:'https://www.openbook.gr/apanta-kavafis/',lvl:'Λύκειο'},
+ {title:'Η Φόνισσα',author:'Αλέξανδρος Παπαδιαμάντης',u:'https://www.openbook.gr/tag/public-domain/',lvl:'Λύκειο'},
+ {title:'Το αμάρτημα της μητρός μου',author:'Γ. Βιζυηνός',u:'https://www.sarantakos.com/',lvl:'Γυμνάσιο-Λύκειο'},
+ {title:'Πάπισσα Ιωάννα',author:'Εμμ. Ροΐδης',u:'https://www.sarantakos.com/',lvl:'Λύκειο'},
+ {title:'Ιλιάδα / Οδύσσεια',author:'Όμηρος (μτφρ.)',u:'http://www.mikrosapoplous.gr/',lvl:'Γυμνάσιο'},
+ {title:'Ερωτόκριτος',author:'Β. Κορνάρος',u:'https://el.wikisource.org/',lvl:'Λύκειο'}
+];
+
+/* ---------- QUESTION BANK (starter — επεκτάσιμο) ----------
+   type:'mc' πολλαπλής επιλογής, 'open' ανοιχτή απάντηση */
+const QBANK={
+ 'Μαθηματικά':[
+  {type:'mc',q:'Ποια είναι η λύση της εξίσωσης 2x + 6 = 0;',opts:['x = 3','x = -3','x = 6','x = -6'],a:1},
+  {type:'mc',q:'Το εμβαδόν κύκλου ακτίνας r είναι:',opts:['2πr','πr²','πd','πr²/2'],a:1},
+  {type:'mc',q:'Παράγωγος της f(x)=x³ είναι:',opts:['3x²','x²','3x','x⁴/4'],a:0},
+  {type:'mc',q:'Το ημ²x + συν²x ισούται με:',opts:['0','2','1','x'],a:2},
+  {type:'mc',q:'Ποια είναι η κλίση της ευθείας y = 2x + 3;',opts:['3','2','-2','1/2'],a:1},
+  {type:'mc',q:'Το ανάπτυγμα (α + β)² ισούται με:',opts:['α² + β²','α² + 2αβ + β²','α² − 2αβ + β²','2αβ'],a:1},
+  {type:'mc',q:'Αν η διακρίνουσα Δ = β² − 4αγ είναι Δ < 0, η εξίσωση 2ου βαθμού έχει:',opts:['δύο ρίζες','μία διπλή ρίζα','καμία πραγματική ρίζα','άπειρες ρίζες'],a:2},
+  {type:'mc',q:'Πόσο κάνει το log₁₀(1000);',opts:['2','3','10','100'],a:1},
+  {type:'mc',q:'Το όριο lim(x→2) x² ισούται με:',opts:['2','4','0','8'],a:1},
+  {type:'mc',q:'Η πιθανότητα να φέρω «κορώνα» σε δίκαιο νόμισμα είναι:',opts:['1','1/2','1/3','0'],a:1},
+  {type:'mc',q:'Το εμβαδόν ορθογωνίου τριγώνου με κάθετες πλευρές 3 και 4 είναι:',opts:['12','6','7','10'],a:1},
+  {type:'open',q:'Βρες την παράγωγο της f(x) = x² + 3x.',a:"f'(x) = 2x + 3"},
+  {type:'open',q:'Λύσε την ανίσωση 3x − 5 > 4 και γράψε το σύνολο λύσεων.',a:'x > 3'}
+ ],
+ 'Φυσική':[
+  {type:'mc',q:'Η μονάδα μέτρησης της δύναμης στο SI είναι:',opts:['Joule','Watt','Newton','Pascal'],a:2},
+  {type:'mc',q:'Ο 2ος νόμος του Νεύτωνα εκφράζεται ως:',opts:['F = m·α','E = m·c²','P = F/A','W = F·s'],a:0},
+  {type:'mc',q:'Η ταχύτητα του φωτός στο κενό είναι περίπου:',opts:['3·10⁶ m/s','3·10⁸ m/s','3·10¹⁰ m/s','300 m/s'],a:1},
+  {type:'mc',q:'Η μονάδα ενέργειας στο SI είναι το:',opts:['Watt','Joule','Newton','Volt'],a:1},
+  {type:'mc',q:'Το βάρος ενός σώματος δίνεται από τη σχέση:',opts:['w = m·α','w = m·g','w = m·υ','w = m/g'],a:1},
+  {type:'mc',q:'Η μονάδα ισχύος στο SI είναι το:',opts:['Joule','Watt','Newton','Pascal'],a:1},
+  {type:'mc',q:'Η περίοδος T και η συχνότητα f συνδέονται με τη σχέση:',opts:['T = f','T = 1/f','T = 2f','T = f²'],a:1},
+  {type:'mc',q:'Ο νόμος του Ohm εκφράζεται ως:',opts:['V = I/R','V = I·R','I = V·R','R = V·I'],a:1},
+  {type:'mc',q:'«Η ενέργεια ούτε δημιουργείται ούτε καταστρέφεται» — αυτή είναι η αρχή:',opts:['της αδράνειας','διατήρησης της ενέργειας','του Αρχιμήδη','του Pascal'],a:1},
+  {type:'mc',q:'Στην ελεύθερη πτώση η επιτάχυνση της βαρύτητας είναι περίπου:',opts:['5 m/s²','9,8 m/s²','3·10⁸ m/s²','0'],a:1},
+  {type:'open',q:'Ένα σώμα μάζας 2 kg δέχεται δύναμη 10 N. Πόση είναι η επιτάχυνση; (α = F/m)',a:'5 m/s²'},
+  {type:'open',q:'Ποια είναι η κινητική ενέργεια σώματος μάζας 2 kg που κινείται με ταχύτητα 3 m/s; (K = ½·m·υ²)',a:'9 J'}
+ ],
+ 'Χημεία':[
+  {type:'mc',q:'Ο ατομικός αριθμός δείχνει τον αριθμό των:',opts:['νετρονίων','πρωτονίων','ηλεκτρονίων + νετρονίων','μορίων'],a:1},
+  {type:'mc',q:'Το pH ουδέτερου διαλύματος στους 25°C είναι:',opts:['0','7','14','1'],a:1},
+  {type:'mc',q:'Ο χημικός τύπος του νερού είναι:',opts:['CO₂','H₂O','O₂','NaCl'],a:1},
+  {type:'mc',q:'Ο δεσμός στο NaCl (χλωριούχο νάτριο) είναι κυρίως:',opts:['ομοιοπολικός','ιοντικός','μεταλλικός','δεσμός υδρογόνου'],a:1},
+  {type:'mc',q:'Ένα διάλυμα με pH < 7 είναι:',opts:['βασικό','ουδέτερο','όξινο','αλκαλικό'],a:2},
+  {type:'mc',q:'Ο αριθμός Avogadro είναι περίπου:',opts:['3·10⁸','6,022·10²³','1,6·10⁻¹⁹','9,8'],a:1},
+  {type:'mc',q:'Το χημικό σύμβολο του Νατρίου είναι:',opts:['N','Na','Ni','K'],a:1},
+  {type:'mc',q:'Σε ποια ομάδα του περιοδικού πίνακα ανήκουν τα ευγενή αέρια;',opts:['1η','17η','18η','2η'],a:2},
+  {type:'mc',q:'Η οξείδωση ορίζεται ως:',opts:['αποβολή ηλεκτρονίων','πρόσληψη ηλεκτρονίων','πρόσληψη πρωτονίων','τίποτα από τα παραπάνω'],a:0},
+  {type:'open',q:'Πόσα άτομα υδρογόνου έχει ένα μόριο θειικού οξέος H₂SO₄;',a:'2'}
+ ],
+ 'Βιολογία':[
+  {type:'mc',q:'Η βασική μονάδα της ζωής είναι:',opts:['το μόριο','το κύτταρο','ο ιστός','το άτομο'],a:1},
+  {type:'mc',q:'Το DNA βρίσκεται κυρίως:',opts:['στα μιτοχόνδρια','στον πυρήνα','στο κυτταρόπλασμα','στα ριβοσώματα'],a:1},
+  {type:'mc',q:'Πόσα χρωμοσώματα έχει το σωματικό κύτταρο του ανθρώπου;',opts:['23','46','48','44'],a:1},
+  {type:'mc',q:'Ποιος είναι ο κύριος ρόλος των ερυθρών αιμοσφαιρίων;',opts:['η άμυνα','η πήξη','η μεταφορά οξυγόνου','η πέψη'],a:2},
+  {type:'mc',q:'Τα ένζυμα είναι κυρίως:',opts:['λίπη','υδατάνθρακες','πρωτεΐνες που επιταχύνουν αντιδράσεις','νουκλεϊκά οξέα'],a:2},
+  {type:'mc',q:'Η μονάδα κληρονομικότητας είναι:',opts:['το κύτταρο','το γονίδιο','ο ιστός','το όργανο'],a:1},
+  {type:'mc',q:'Η μίτωση παράγει:',opts:['4 γαμέτες','δύο πανομοιότυπα κύτταρα','ένα κύτταρο','σπερματοζωάρια'],a:1},
+  {type:'mc',q:'Ποιο οργανίδιο θεωρείται «εργοστάσιο ενέργειας» του κυττάρου;',opts:['πυρήνας','μιτοχόνδριο','ριβόσωμα','λυσόσωμα'],a:1},
+  {type:'open',q:'Πώς ονομάζεται η διαδικασία παραγωγής τροφής από τα φυτά με τη βοήθεια του φωτός;',a:'Φωτοσύνθεση'},
+  {type:'open',q:'Πώς λέγεται το μόριο-φορέας της γενετικής πληροφορίας;',a:'DNA (δεοξυριβονουκλεϊκό οξύ)'}
+ ],
+ 'Νεοελληνική Γλώσσα':[
+  {type:'mc',q:'Ποια πρόταση περιέχει μεταφορά;',opts:['Το τραπέζι είναι ξύλινο','Έγινε θηρίο από τον θυμό του','Ήρθε στις 5','Το βιβλίο είναι κόκκινο'],a:1},
+  {type:'mc',q:'«ωραίος» — ποιο είναι το αντώνυμο;',opts:['όμορφος','άσχημος','μεγάλος','νέος'],a:1},
+  {type:'mc',q:'«Τρέχει σαν αστραπή» — ποιο σχήμα λόγου είναι;',opts:['μεταφορά','παρομοίωση','προσωποποίηση','υπερβολή'],a:1},
+  {type:'mc',q:'Η λέξη «όμως» είναι:',opts:['ουσιαστικό','επίθετο','σύνδεσμος','ρήμα'],a:2},
+  {type:'mc',q:'«Ο ήλιος χαμογέλασε» — ποιο σχήμα λόγου είναι;',opts:['μεταφορά','προσωποποίηση','μετωνυμία','παρομοίωση'],a:1},
+  {type:'mc',q:'Ποια πρόταση είναι σε παθητική φωνή;',opts:['Ο Νίκος γράφει γράμμα','Το γράμμα γράφτηκε από τον Νίκο','Γράφω ένα γράμμα','Θα γράψω αύριο'],a:1},
+  {type:'mc',q:'Το «καλός – καλύτερος – άριστος» δείχνει:',opts:['κλίση ρήματος','παραθετικά επιθέτου','πτώσεις','χρόνους'],a:1},
+  {type:'mc',q:'Ποιο είναι συνώνυμο του «γενναίος»;',opts:['δειλός','θαρραλέος','αδύναμος','ήσυχος'],a:1},
+  {type:'open',q:'Γράψε μια πρόταση που να περιέχει μια παρομοίωση.',a:'(Ανοιχτή — έλεγξε αν υπάρχει «σαν/όπως» και σύγκριση.)'},
+  {type:'open',q:'Γράψε μια περίληψη 40-50 λέξεων ενός κειμένου της επιλογής σου.',a:'(Ανοιχτή απάντηση — αξιολόγησε δομή, νόημα, έκταση.)'}
+ ],
+ 'Νεοελληνική Λογοτεχνία':[
+  {type:'mc',q:'Ποιος έγραψε τον «Ερωτόκριτο»;',opts:['Δ. Σολωμός','Β. Κορνάρος','Κ. Καβάφης','Ο. Ελύτης'],a:1},
+  {type:'mc',q:'Ποιος έγραψε τον «Ύμνο εις την Ελευθερίαν»;',opts:['Α. Κάλβος','Δ. Σολωμός','Κ. Παλαμάς','Γ. Σεφέρης'],a:1},
+  {type:'mc',q:'Ο Οδυσσέας Ελύτης τιμήθηκε με Νόμπελ Λογοτεχνίας το:',opts:['1963','1979','1987','2000'],a:1},
+  {type:'mc',q:'Το «Άξιον Εστί» είναι έργο του:',opts:['Γ. Σεφέρη','Γ. Ρίτσου','Ο. Ελύτη','Κ. Καβάφη'],a:2},
+  {type:'mc',q:'Ο Γιώργος Σεφέρης τιμήθηκε με Νόμπελ Λογοτεχνίας το:',opts:['1963','1979','1955','1971'],a:0},
+  {type:'mc',q:'Ποιος ποιητής έγραψε την «Ιθάκη»;',opts:['Κ. Π. Καβάφης','Δ. Σολωμός','Γ. Ρίτσος','Κ. Καρυωτάκης'],a:0},
+  {type:'mc',q:'Η «Φόνισσα» είναι έργο του:',opts:['Ε. Ροΐδη','Α. Παπαδιαμάντη','Γ. Βιζυηνού','Κ. Θεοτόκη'],a:1},
+  {type:'open',q:'Ανάφερε έναν Έλληνα ποιητή που τιμήθηκε με βραβείο Νόμπελ.',a:'Γ. Σεφέρης ή Ο. Ελύτης'}
+ ],
+ 'Αρχαία Ελληνικά':[
+  {type:'mc',q:'«λύω» — τι χρόνο δηλώνει ο τύπος «ἔλυον»;',opts:['Ενεστώτα','Παρατατικό','Αόριστο','Μέλλοντα'],a:1},
+  {type:'mc',q:'Η λέξη «ἄνθρωπος» ανήκει στη:',opts:['α΄ κλίση','β΄ κλίση','γ΄ κλίση','είναι άκλιτη'],a:1},
+  {type:'mc',q:'Η λέξη «λόγος» ανήκει στη:',opts:['α΄ κλίση','β΄ κλίση','γ΄ κλίση','δ΄ κλίση'],a:1},
+  {type:'mc',q:'Ποιος είναι ο αόριστος του ρήματος «παιδεύω»;',opts:['παιδεύσω','ἐπαίδευον','ἐπαίδευσα','πεπαίδευκα'],a:2},
+  {type:'mc',q:'Το ρήμα «οἶδα» σημαίνει:',opts:['βλέπω','γνωρίζω','ακούω','λέω'],a:1},
+  {type:'mc',q:'Η πρόθεση «ἐκ/ἐξ» συντάσσεται με:',opts:['αιτιατική','δοτική','γενική','ονομαστική'],a:2},
+  {type:'mc',q:'Ο συγκριτικός βαθμός του «καλός» είναι:',opts:['κάλλιστος','καλλίων','καλός','κάλλος'],a:1},
+  {type:'open',q:'Μετάφρασε: «γνῶθι σαυτόν».',a:'Γνώρισε τον εαυτό σου.'},
+  {type:'open',q:'Μετάφρασε: «πάντα ῥεῖ».',a:'Τα πάντα ρέουν / όλα κυλούν.'}
+ ],
+ 'Λατινικά':[
+  {type:'mc',q:'Η λατινική λέξη «puella» σημαίνει:',opts:['αγόρι','κορίτσι','βιβλίο','πόλη'],a:1},
+  {type:'mc',q:'Το ουσιαστικό «rosa, rosae» ανήκει στην:',opts:['α΄ κλίση','β΄ κλίση','γ΄ κλίση','δ΄ κλίση'],a:0},
+  {type:'mc',q:'Το ρήμα «amo» σημαίνει:',opts:['βλέπω','αγαπώ','ακούω','γράφω'],a:1},
+  {type:'mc',q:'Η λέξη «Roma» σημαίνει:',opts:['η Ρώμη','ο δρόμος','ο βασιλιάς','ο στρατός'],a:0},
+  {type:'mc',q:'Η γενική ενικού του «dominus» (β΄ κλίση) είναι:',opts:['domino','domini','dominum','dominus'],a:1},
+  {type:'open',q:'Μετάφρασε: «veni, vidi, vici».',a:'Ήρθα, είδα, νίκησα.'}
+ ],
+ 'Ιστορία':[
+  {type:'mc',q:'Πότε έγινε η Άλωση της Κωνσταντινούπολης από τους Οθωμανούς;',opts:['1204','1453','1821','1922'],a:1},
+  {type:'mc',q:'Η Ελληνική Επανάσταση ξεκίνησε το:',opts:['1770','1821','1897','1912'],a:1},
+  {type:'mc',q:'Η Μικρασιατική Καταστροφή συνέβη το:',opts:['1919','1920','1922','1940'],a:2},
+  {type:'mc',q:'Η Άλωση της Πόλης (1453) έγινε επί αυτοκράτορα:',opts:['Ιουστινιανού','Κωνσταντίνου ΙΑ΄ Παλαιολόγου','Βασιλείου Β΄','Ηρακλείου'],a:1},
+  {type:'mc',q:'Το «ΟΧΙ» της 28ης Οκτωβρίου ειπώθηκε το:',opts:['1912','1922','1940','1944'],a:2},
+  {type:'mc',q:'Οι Βαλκανικοί Πόλεμοι διεξήχθησαν τα έτη:',opts:['1897','1912-1913','1919-1922','1940-1941'],a:1},
+  {type:'mc',q:'Η Άλωση της Πόλης από τους Σταυροφόρους (Δ΄ Σταυροφορία) έγινε το:',opts:['1204','1261','1453','1097'],a:0},
+  {type:'mc',q:'Η Ένωση της Επτανήσου με την Ελλάδα έγινε το:',opts:['1830','1864','1881','1913'],a:1},
+  {type:'open',q:'Ποιο έτος αναγνωρίστηκε η Ελλάδα ως ανεξάρτητο κράτος (Πρωτόκολλο του Λονδίνου);',a:'1830'}
+ ],
+ 'Πληροφορική':[
+  {type:'mc',q:'Τι σημαίνει CPU;',opts:['Central Processing Unit','Computer Personal Unit','Central Program Utility','Control Process Unit'],a:0},
+  {type:'mc',q:'Πόσα bit έχει ένα byte;',opts:['4','8','16','32'],a:1},
+  {type:'mc',q:'Ποια δομή αλγορίθμου επαναλαμβάνει εντολές;',opts:['επιλογή','ακολουθία','επανάληψη','ανάθεση'],a:2},
+  {type:'mc',q:'Το δυαδικό σύστημα χρησιμοποιεί τα ψηφία:',opts:['0-9','0 και 1','1-10','A-F'],a:1},
+  {type:'mc',q:'Ποια από τις παρακάτω είναι λογική πράξη;',opts:['SUM','AND','PRINT','GOTO'],a:1},
+  {type:'mc',q:'Ποια εντολή παίρνει δεδομένα από τον χρήστη;',opts:['Εμφάνισε','Διάβασε','Αν','Για'],a:1},
+  {type:'mc',q:'Ένας πίνακας (array) είναι:',opts:['μια απλή μεταβλητή','δομή δεδομένων με στοιχεία ίδιου τύπου','μια εντολή','ένας βρόχος'],a:1},
+  {type:'mc',q:'Πόσες διαφορετικές τιμές μπορεί να πάρει ένα bit;',opts:['1','2','8','10'],a:1},
+  {type:'open',q:'Γράψε μια δομή επανάληψης (ψευδοκώδικας) που τυπώνει τους αριθμούς 1 έως 5.',a:'Για i από 1 μέχρι 5 / Εμφάνισε i / Τέλος_επανάληψης'},
+  {type:'open',q:'Τι κάνει η δομή «ΑΝ … ΤΟΤΕ … ΤΕΛΟΣ_ΑΝ»;',a:'Επιλογή: εκτελεί εντολές μόνο αν ισχύει μια συνθήκη.'}
+ ],
+ 'Αρχές Οικονομικής Θεωρίας':[
+  {type:'mc',q:'Ο νόμος της ζήτησης λέει ότι όταν αυξάνεται η τιμή, η ζητούμενη ποσότητα:',opts:['αυξάνεται','μειώνεται','μένει σταθερή','μηδενίζεται'],a:1},
+  {type:'mc',q:'Το κόστος ευκαιρίας είναι:',opts:['το χρηματικό κόστος','η αξία της επόμενης καλύτερης επιλογής που θυσιάζεται','ο φόρος','το κέρδος'],a:1},
+  {type:'mc',q:'Όταν αυξάνεται η προσφορά (με σταθερή ζήτηση), η τιμή τείνει να:',opts:['αυξάνεται','μειώνεται','μένει ίδια','μηδενίζεται'],a:1},
+  {type:'mc',q:'Το ΑΕΠ (Ακαθάριστο Εγχώριο Προϊόν) μετρά:',opts:['τον πληθυσμό','τη συνολική αξία παραγωγής αγαθών & υπηρεσιών μιας χώρας','μόνο τους φόρους','μόνο τις εξαγωγές'],a:1},
+  {type:'mc',q:'Ο πληθωρισμός είναι:',opts:['η πτώση των τιμών','η γενική άνοδος του επιπέδου των τιμών','η ανεργία','ένας φόρος'],a:1},
+  {type:'mc',q:'Αγαθά που ικανοποιούν την ίδια ανάγκη (π.χ. βούτυρο–μαργαρίνη) λέγονται:',opts:['συμπληρωματικά','υποκατάστατα','δημόσια','ελεύθερα'],a:1},
+  {type:'mc',q:'Η καμπύλη παραγωγικών δυνατοτήτων δείχνει:',opts:['τα κέρδη','τους εναλλακτικούς συνδυασμούς παραγωγής δύο αγαθών','τους φόρους','τη ζήτηση'],a:1},
+  {type:'open',q:'Τι δηλώνει ο νόμος της προσφοράς;',a:'Όταν αυξάνεται η τιμή ενός αγαθού, αυξάνεται και η προσφερόμενη ποσότητά του.'}
+ ],
+ 'Γεωγραφία':[
+  {type:'mc',q:'Ποια είναι η μεγαλύτερη σε έκταση ήπειρος;',opts:['Αφρική','Ασία','Ευρώπη','Αμερική'],a:1},
+  {type:'mc',q:'Ποιος είναι ο μεγαλύτερος ωκεανός;',opts:['Ατλαντικός','Ειρηνικός','Ινδικός','Αρκτικός'],a:1},
+  {type:'mc',q:'Ποια είναι η πρωτεύουσα της Ελλάδας;',opts:['Αθήνα','Θεσσαλονίκη','Πάτρα','Λάρισα'],a:0},
+  {type:'mc',q:'Ποιο είναι το ψηλότερο βουνό της Ελλάδας;',opts:['Παρνασσός','Όλυμπος','Ταΰγετος','Πίνδος'],a:1},
+  {type:'mc',q:'Ο Ισημερινός χωρίζει τη Γη σε:',opts:['ανατολικό & δυτικό ημισφαίριο','βόρειο & νότιο ημισφαίριο','δύο πόλους','τρεις ζώνες'],a:1},
+  {type:'open',q:'Ποιος είναι ο μεγαλύτερος σε μήκος ποταμός εντός της Ελλάδας;',a:'Αλιάκμονας'}
+ ],
+ 'Αγγλικά':[
+  {type:'mc',q:'She ___ to school every day.',opts:['go','goes','going','gone'],a:1},
+  {type:'mc',q:'What is the past tense of the verb "go"?',opts:['goed','went','gone','going'],a:1},
+  {type:'mc',q:'I have lived here ___ 2010.',opts:['for','since','from','at'],a:1},
+  {type:'mc',q:'What is the plural of "child"?',opts:['childs','children','childes','child'],a:1},
+  {type:'mc',q:'This is the ___ film I have ever seen.',opts:['good','better','best','well'],a:2},
+  {type:'mc',q:'They ___ watching TV when I arrived.',opts:['was','were','is','are'],a:1},
+  {type:'open',q:'Write one sentence using the Present Perfect tense.',a:'(Open — check for "have/has + past participle".)'}
+ ]
+};
+
+/* ---------- FLASHCARDS (κάρτες μνήμης — επεκτάσιμο) ---------- */
+const FLASHCARDS={
+ 'Ιστορία':[
+  {front:'1453',back:'Άλωση της Κωνσταντινούπολης'},{front:'1204',back:'Άλωση της Πόλης από τους Σταυροφόρους'},
+  {front:'1821',back:'Έναρξη Ελληνικής Επανάστασης'},{front:'1830',back:'Πρωτόκολλο Λονδίνου — ανεξαρτησία Ελλάδας'},
+  {front:'1864',back:'Ένωση Επτανήσου με την Ελλάδα'},{front:'1912–1913',back:'Βαλκανικοί Πόλεμοι'},
+  {front:'1922',back:'Μικρασιατική Καταστροφή'},{front:'28 Οκτ. 1940',back:'Το «ΟΧΙ» — είσοδος στον Β΄ Π.Π.'}
+ ],
+ 'Αρχαία Ελληνικά':[
+  {front:'οἶδα',back:'γνωρίζω'},{front:'γνῶθι σαυτόν',back:'γνώρισε τον εαυτό σου'},
+  {front:'πάντα ῥεῖ',back:'τα πάντα ρέουν (Ηράκλειτος)'},{front:'μαιευτική',back:'σωκρατική μέθοδος «γέννησης» της γνώσης'},
+  {front:'«ἄνθρωπος»',back:'β΄ κλίση'},{front:'ἐκ / ἐξ',back:'πρόθεση + γενική'}
+ ],
+ 'Βιολογία':[
+  {front:'DNA',back:'φορέας της γενετικής πληροφορίας'},{front:'Μίτωση',back:'2 πανομοιότυπα θυγατρικά κύτταρα'},
+  {front:'Μείωση',back:'παραγωγή γαμετών (n)'},{front:'Φωτοσύνθεση',back:'παραγωγή γλυκόζης από φως'},
+  {front:'Ένζυμο',back:'πρωτεΐνη-καταλύτης'},{front:'Ριβόσωμα',back:'σύνθεση πρωτεϊνών'},{front:'Χρωμοσώματα ανθρώπου',back:'46 (23 ζεύγη)'}
+ ],
+ 'Φυσική':[
+  {front:'2ος νόμος Νεύτωνα',back:'F = m·α'},{front:'Νόμος Ohm',back:'V = I·R'},
+  {front:'Κινητική ενέργεια',back:'K = ½·m·υ²'},{front:'Περίοδος & συχνότητα',back:'T = 1/f'},
+  {front:'Ταχύτητα φωτός',back:'c ≈ 3·10⁸ m/s'},{front:'Βάρος',back:'w = m·g'}
+ ],
+ 'Χημεία':[
+  {front:'pH = 7',back:'ουδέτερο διάλυμα'},{front:'Οξείδωση',back:'αποβολή ηλεκτρονίων'},
+  {front:'Αριθμός Avogadro',back:'6,022·10²³'},{front:'NaCl',back:'ιοντικός δεσμός'},
+  {front:'Ατομικός αριθμός',back:'πλήθος πρωτονίων'},{front:'H₂O',back:'νερό'}
+ ],
+ 'Μαθηματικά':[
+  {front:'(α+β)²',back:'α² + 2αβ + β²'},{front:'Παράγωγος xⁿ',back:'n·xⁿ⁻¹'},
+  {front:'Εμβαδόν κύκλου',back:'π·r²'},{front:'ημ²x + συν²x',back:'1'},{front:'Διακρίνουσα',back:'Δ = β² − 4αγ'}
+ ],
+ 'Λατινικά':[
+  {front:'puella',back:'κορίτσι'},{front:'amo',back:'αγαπώ'},{front:'rosa, rosae',back:'α΄ κλίση'},
+  {front:'veni, vidi, vici',back:'ήρθα, είδα, νίκησα'},{front:'dominus → γενική',back:'domini'}
+ ],
+ 'Νεοελληνική Γλώσσα':[
+  {front:'Μεταφορά',back:'μεταφορά σημασίας χωρίς «σαν»'},{front:'Παρομοίωση',back:'σύγκριση με «σαν/όπως»'},
+  {front:'Προσωποποίηση',back:'ανθρώπινες ιδιότητες σε άψυχα'},{front:'Περίληψη',back:'σύντομη απόδοση του νοήματος'}
+ ]
+};
+
+/* ---------- HELPERS ---------- */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+function allSubjects(){const set=new Set();LEVELS.forEach(l=>l.grades.forEach(g=>g.subjects.forEach(s=>set.add(s.replace(/&amp;/g,'&')))));return [...set].sort((a,b)=>a.localeCompare(b,'el'));}
+
+/* =========================================================================
+   ROUTER
+   ========================================================================= */
+const TITLES={home:'Αρχική',subjects:'Μαθήματα & Ύλη',exams:'Πανελλήνιες / Κατατακτήριες',syllabus:'Εξεταστέα Ύλη',careers:'Σχολές & Επαγγέλματα',schedule:'Πρόγραμμα Διαβάσματος',library:'Βιβλιοθήκη',quiz:'Διαγωνίσματα / Κουίζ',board:'Διαδραστικός Πίνακας',notes:'Σημειώσεις',pomodoro:'Χρονόμετρο Μελέτης',settings:'Προφίλ & Ρυθμίσεις'};
+function go(v){
+  $$('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  $('#view-title').textContent=TITLES[v]||'';
+  const c=$('#views');c.innerHTML='';
+  if(window.__pomoInt){clearInterval(window.__pomoInt);window.__pomoInt=null;window.__pomoRunning=false;} // pause χρονόμετρο όταν φεύγεις
+  ({home:viewHome,subjects:viewSubjects,exams:viewExams,syllabus:viewSyllabus,careers:viewCareers,schedule:viewSchedule,library:viewLibrary,quiz:viewQuiz,board:viewBoard,notes:viewNotes,pomodoro:viewPomodoro,settings:viewSettings}[v]||viewHome)(c);
+  window.scrollTo(0,0);
+}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.view);});
+
+/* ---------- WHO line ---------- */
+function refreshWho(){
+  const p=S.profile;
+  $('#who').innerHTML = p ? `👤 <b>${esc(p.name||'Μαθητής')}</b> · ${esc(p.typeLabel||'')}${p.gradeLabel?' · '+esc(p.gradeLabel):''}${p.goalLabel?' · 🎯 '+esc(p.goalLabel):''}` : 'Συμπλήρωσε το προφίλ σου για εξατομικευμένο πρόγραμμα.';
+}
+
+/* =========================================================================
+   VIEW: HOME / DASHBOARD
+   ========================================================================= */
+function viewHome(c){
+  const p=S.profile;
+  if(!p){
+    c.appendChild(el('div','notice','👋 Καλωσήρθες! Δεν έχεις προφίλ ακόμα. Πάτησε «Ξεκίνα» για να απαντήσεις μερικές ερωτήσεις και να φτιαχτεί αυτόματα πρόγραμμα διαβάσματος.'));
+    const b=el('button','btn','🚀 Ξεκίνα το ερωτηματολόγιο');b.onclick=()=>openOnboard();c.appendChild(b);
+  }
+  // ⏳ Αντίστροφη μέτρηση εξετάσεων
+  if(p && p.targetDate){
+    const dU=daysUntil(p.targetDate);
+    if(dU!=null && dU>=0){
+      const cd=el('div','card');cd.style.cssText='text-align:center;background:linear-gradient(90deg,var(--redsoft),transparent)';
+      cd.innerHTML=`<div class="tag">Αντίστροφη μέτρηση</div><div style="font-size:2.4rem;font-weight:800;color:var(--red2)">${dU} <span style="font-size:1rem;color:var(--muted)">ημέρες</span></div><p class="hint">έως ${new Date(p.targetDate).toLocaleDateString('el-GR')} · ${esc(p.goalLabel||'στόχος')}</p>`;
+      c.appendChild(cd);
+    }
+  }
+  // stats
+  const grid=el('div','grid g3');
+  const totalQ=S.quizScores.reduce((a,x)=>a+x.total,0), gotQ=S.quizScores.reduce((a,x)=>a+x.score,0);
+  const doneCnt=Object.values(S.done).filter(Boolean).length;
+  const stats=[
+    {b:S.quizScores.length,s:'Κουίζ που έλυσες'},
+    {b:totalQ?Math.round(gotQ/totalQ*100)+'%':'—',s:'Μέση επιτυχία'},
+    {b:doneCnt,s:'Ολοκληρωμένες μελέτες'},
+    {b:S.customBooks.length,s:'Βιβλία στη βιβλιοθήκη σου'}
+  ];
+  stats.forEach(x=>{const card=el('div','card stat');card.innerHTML=`<b>${x.b}</b><span>${x.s}</span>`;grid.appendChild(card);});
+  c.appendChild(grid);
+
+  // 🏆 Επιτεύγματα & σερί
+  {
+    const st=computeStats();
+    const ac=el('div','card');
+    ac.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div><div class="tag">Επιτεύγματα</div><h3 style="margin:0">🏆 Πρόοδος &amp; κίνητρο</h3></div>
+      <div style="text-align:right"><div style="font-size:1.6rem;font-weight:800;color:var(--red2)">🔥 ${st.streak}</div><small class="hint">μέρες σερί</small></div></div>`;
+    const g2=el('div','grid g3');g2.style.marginTop='10px';
+    [['🃏',st.cardsReviewed,'επαναλήψεις'],['🍅',st.pomodoros,'Pomodoro'],['⭐',st.favorites,'αγαπημένα']].forEach(m=>{const t=el('div','stat');t.innerHTML=`<b>${m[0]} ${m[1]}</b><span>${m[2]}</span>`;g2.appendChild(t);});
+    ac.appendChild(g2);
+    const cnt=ACHIEVEMENTS.filter(a=>a.t(st)).length;
+    const hd=el('p','hint');hd.style.margin='12px 0 4px';hd.innerHTML=`<b>${cnt}/${ACHIEVEMENTS.length}</b> κονκάρδες ξεκλειδωμένες`;
+    ac.appendChild(hd);
+    const badges=el('div');badges.style.cssText='display:flex;flex-wrap:wrap;gap:10px;margin-top:6px';
+    ACHIEVEMENTS.forEach(a=>{const un=a.t(st);const b=el('div');b.title=a.d;b.style.cssText=`text-align:center;width:82px;opacity:${un?1:.35};filter:${un?'none':'grayscale(1)'}`;b.innerHTML=`<div style="font-size:1.8rem">${a.i}</div><small style="display:block;font-weight:${un?700:400};font-size:.68rem;line-height:1.2">${esc(a.n)}</small>`;badges.appendChild(b);});
+    ac.appendChild(badges);
+    c.appendChild(ac);
+  }
+
+  // ⭐ Αγαπημένες σχολές
+  if(S.favorites && S.favorites.length){
+    const fc=el('div','card');
+    fc.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div><div class="tag">Αγαπημένα</div><h3 style="margin:0">⭐ Οι σχολές μου (${S.favorites.length})</h3></div>
+      <button class="btn ghost sm no-print" id="fav-go">🏛️ Σχολές &amp; Επαγγέλματα →</button></div>`;
+    const wrap=el('div','scrollx');wrap.style.marginTop='10px';
+    const rows=S.favorites.map((s,i)=>`<tr>
+      <td><b>${esc(s.d)}</b><br><small style="color:var(--muted)">${esc(s.inst)}${s.city?' · '+esc(s.city):''}</small><br><small style="color:var(--blue)">💼 ${esc(careerHint(s.d))}</small></td>
+      <td style="white-space:nowrap">${s.b26!=null?fmtMoria(s.b26):'—'}</td><td>${deltaHtml(s.b26,s.b25)}</td>
+      <td class="no-print"><button class="btn ghost sm" data-rmfav="${i}" title="Αφαίρεση">✕</button></td></tr>`).join('');
+    wrap.innerHTML=`<table><thead><tr><th>Σχολή / Ίδρυμα</th><th>Βάση 2026</th><th>Δ 25→26</th><th class="no-print"></th></tr></thead><tbody>${rows}</tbody></table>`;
+    fc.appendChild(wrap);c.appendChild(fc);
+    const goBtn=$('#fav-go',fc); if(goBtn) goBtn.onclick=()=>go('careers');
+    $$('[data-rmfav]',fc).forEach(b=>b.onclick=()=>{S.favorites.splice(+b.dataset.rmfav,1);save();go('home');});
+  }
+
+  // 📖 Τι διαβάζω σήμερα
+  const tp=todayPlan();
+  if(tp){
+    const tc=el('div','card');
+    tc.innerHTML=`<div class="tag">Σήμερα ${new Date().toLocaleDateString('el-GR',{weekday:'long',day:'2-digit',month:'2-digit'})}</div><h3>📖 Τι διαβάζω σήμερα ${tp.rev?'<span class="pill red">🔁 Επανάληψη</span>':''}</h3>`;
+    const ul=el('div');ul.style.marginTop='6px';
+    ul.innerHTML=tp.sessions.map((s,si)=>{const id=`${tp.w}-${tp.d}-${si}`,ck=S.done[id]?'checked':'';
+      return `<label style="display:flex;align-items:center;gap:8px;margin:6px 0;cursor:pointer"><input type="checkbox" style="width:auto" data-today="${id}" ${ck}> <span><b>${esc(s.subject)}</b>${s.topic?` <small style="color:var(--blue)">— ${esc(s.topic)}</small>`:''} <small style="color:var(--muted)">(1ω)</small></span></label>`;}).join('');
+    tc.appendChild(ul);
+    const gob=el('button','btn ghost sm no-print','🗓️ Όλο το πρόγραμμα →');gob.onclick=()=>go('schedule');tc.appendChild(gob);
+    c.appendChild(tc);
+    $$('[data-today]',tc).forEach(cb=>cb.onchange=()=>{S.done[cb.dataset.today]=cb.checked;save();if(cb.checked)touchActivity();});
+  }
+  // 📈 Τάση κουίζ
+  if(S.quizScores.length>=2){
+    const qt=el('div','card');qt.innerHTML=`<div class="tag">Πρόοδος</div><h3>📈 Τάση στα κουίζ</h3>`;
+    const last=S.quizScores.slice(-8);
+    const bars=last.map(x=>{const pct=Math.round(x.score/x.total*100);return `<div title="${esc(x.subject)} ${x.date}: ${x.score}/${x.total}" style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px"><div style="width:70%;height:${Math.max(6,pct)}px;background:${pct>=50?'linear-gradient(var(--red2),var(--red))':'#e0505c'};border-radius:4px 4px 0 0"></div><small style="color:var(--muted);font-size:.62rem">${pct}%</small></div>`;}).join('');
+    const box=el('div');box.style.cssText='display:flex;align-items:flex-end;gap:6px;height:120px;margin-top:8px';box.innerHTML=bars;
+    qt.appendChild(box);c.appendChild(qt);
+  }
+  // 🃏 Κάρτες για επανάληψη σήμερα
+  if(S.cardSR && Object.keys(S.cardSR).length){
+    const dc=dueCount();
+    if(dc>0){
+      const fr=el('div','card');
+      fr.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><div><div class="tag">Επανάληψη</div><h3 style="margin:0">🃏 ${dc} κάρτες για επανάληψη σήμερα</h3></div><button class="btn sm no-print" id="fc-goto">▶️ Ξεκίνα</button></div>`;
+      c.appendChild(fr);
+      const g=$('#fc-goto',fr); if(g) g.onclick=()=>{window.__quizTab='cards';go('quiz');};
+    }
+  }
+
+  // Today / next steps
+  const q=el('div','grid g2');
+  const a=el('div','card');
+  a.innerHTML=`<div class="tag">Επόμενα βήματα</div><h3>Τι να κάνω σήμερα;</h3>`;
+  const ul=el('div');
+  const steps=[];
+  if(!p) steps.push('Συμπλήρωσε το προφίλ σου (κουμπί πάνω).');
+  else{
+    if(!S.schedule) steps.push('Φτιάξε το <b>αυτόματο πρόγραμμα διαβάσματος</b> στην ενότητα 🗓️.');
+    steps.push('Διάβασε τη σημερινή ενότητα από το πρόγραμμα και τσέκαρέ την.');
+    steps.push('Λύσε ένα <b>κουίζ</b> στο αδύναμο μάθημά σου για εξάσκηση.');
+    steps.push('Άνοιξε το <b>σχολικό βιβλίο</b> ή ένα λογοτεχνικό από τη Βιβλιοθήκη.');
+  }
+  ul.innerHTML='<ul style="margin:10px 0 0;padding-left:18px">'+steps.map(s=>`<li style="margin:6px 0">${s}</li>`).join('')+'</ul>';
+  a.appendChild(ul);
+  q.appendChild(a);
+
+  const b2=el('div','card');
+  b2.innerHTML=`<div class="tag">Γρήγορη πρόσβαση</div><h3>Συντομεύσεις</h3>`;
+  const qa=el('div','row');qa.style.marginTop='10px';
+  [['📚 Μαθήματα','subjects'],['🎓 Εξετάσεις','exams'],['🗓️ Πρόγραμμα','schedule'],['📝 Κουίζ','quiz'],['🖊️ Πίνακας','board'],['📖 Βιβλιοθήκη','library']].forEach(([t,v])=>{
+    const bb=el('button','btn ghost sm',t);bb.style.flex='1 1 40%';bb.onclick=()=>go(v);qa.appendChild(bb);
+  });
+  b2.appendChild(qa);q.appendChild(b2);
+  c.appendChild(q);
+
+  if(p && p.goal==='pan' && p.field!=null && FIELDS[p.field]){
+    const f=FIELDS[p.field];
+    const fc=el('div','card');
+    fc.innerHTML=`<div class="tag">Ο στόχος σου</div><h3>${f.n}</h3><p style="color:var(--muted)">Εξεταζόμενα μαθήματα:</p>`+
+      f.subs.map(s=>`<span class="pill red">${s}</span>`).join('')+
+      `<p class="hint" style="margin-top:10px">Ενδεικτικές σχολές: ${f.ex}</p>`;
+    c.appendChild(fc);
+  }
+}
+
+/* =========================================================================
+   VIEW: SUBJECTS
+   ========================================================================= */
+function viewSubjects(c){
+  c.appendChild(el('div','notice','📘 Τα επίσημα σχολικά βιβλία ανοίγουν από το <b>ebooks.edu.gr</b> (Υπουργείο Παιδείας — Διαδραστικά Σχολικά Βιβλία). Κάθε τάξη ανοίγει τη δική της σελίδα με όλα τα μαθήματα σε html & pdf.'));
+  LEVELS.forEach(lv=>{
+    const card=el('div','card');
+    card.innerHTML=`<div class="tag">${lv.name}</div>`;
+    lv.grades.forEach(g=>{
+      const box=el('div');box.style.margin='14px 0';
+      box.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">${g.g}</h3>
+        <a class="btn sm" style="text-decoration:none" href="${EBOOK(g.code)}" target="_blank" rel="noopener">📚 Βιβλία τάξης →</a></div>`;
+      const wrap=el('div');wrap.style.marginTop='8px';
+      g.subjects.forEach(s=>{const sp=el('span','pill',s);wrap.appendChild(sp);});
+      box.appendChild(wrap);
+      card.appendChild(box);
+      card.appendChild(el('div','divider'));
+    });
+    card.lastChild.remove();
+    c.appendChild(card);
+  });
+  const help=el('div','card');
+  help.innerHTML=`<div class="tag">Χρήσιμα</div><h3>Πηγές ανά μάθημα</h3>
+   <p><a href="https://ebooks.edu.gr/ebooks/v2/allcourses.jsp" target="_blank" rel="noopener">📖 Όλα τα βιβλία ανά μάθημα (ebooks.edu.gr)</a></p>
+   <p><a href="http://photodentro.edu.gr/" target="_blank" rel="noopener">🌳 Φωτόδεντρο — διαδραστικό υλικό & ασκήσεις</a></p>
+   <p><a href="https://ebooks.edu.gr/ebooks/v2/allmaterial.jsp" target="_blank" rel="noopener">🏫 Όλο το υλικό (όλες οι τάξεις)</a></p>`;
+  c.appendChild(help);
+}
+
+/* =========================================================================
+   VIEW: EXAMS
+   ========================================================================= */
+function viewExams(c){
+  const tabs=el('div','row no-print');tabs.style.marginBottom='10px';
+  const bPan=el('button','btn','🎓 Πανελλήνιες (ΓΕΛ)');
+  const bKt=el('button','btn ghost','🔁 Κατατακτήριες');
+  tabs.appendChild(bPan);tabs.appendChild(bKt);c.appendChild(tabs);
+  const host=el('div');c.appendChild(host);
+  bPan.onclick=()=>{bPan.className='btn';bKt.className='btn ghost';renderPan(host);};
+  bKt.onclick=()=>{bKt.className='btn';bPan.className='btn ghost';renderKt(host);};
+  renderPan(host);
+}
+function renderPan(host){
+  host.innerHTML='';
+  host.appendChild(el('div','notice','🎓 Οι Πανελλαδικές (ΓΕΛ) εξετάζουν <b>4 μαθήματα</b> ανά Ομάδα Προσανατολισμού. Κοινό για όλους: <b>Νεοελληνική Γλώσσα & Λογοτεχνία</b>. Διάλεξε πεδίο για να στοχεύσεις την προετοιμασία σου.'));
+  FIELDS.forEach((f,i)=>{
+    const card=el('div','card');
+    const sel=S.profile&&S.profile.goal==='pan'&&S.profile.field===i;
+    card.innerHTML=`<div class="tag">${f.group}</div>
+      <h3>${f.n}</h3>
+      <p style="color:var(--muted);margin:.3em 0">Εξεταζόμενα μαθήματα (4):</p>
+      ${f.subs.map(s=>`<span class="pill red">${s}</span>`).join('')}
+      <p class="hint" style="margin-top:10px"><b>Ενδεικτικές σχολές:</b> ${f.ex}</p>`;
+    const btn=el('button',sel?'btn':'btn ghost',sel?'✓ Ο στόχος σου':'🎯 Όρισε ως στόχο μου');
+    btn.style.marginTop='8px';
+    btn.onclick=()=>{ if(!S.profile)S.profile={name:'',type:'student'}; S.profile.goal='pan';S.profile.goalLabel='Πανελλήνιες — '+f.n.split('—')[0].trim();S.profile.field=i;save();refreshWho();renderPan(host);};
+    card.appendChild(btn);
+    host.appendChild(card);
+  });
+  const info=el('div','card');
+  info.innerHTML=`<div class="tag">Πληροφορίες</div><h3>Χρήσιμοι σύνδεσμοι</h3>
+   <p><a href="https://www.minedu.gov.gr/" target="_blank" rel="noopener">🏛️ Υπουργείο Παιδείας — επίσημες ανακοινώσεις & εξεταστέα ύλη</a></p>
+   <p><a href="https://edu.klimaka.gr/panelladikes" target="_blank" rel="noopener">🗓️ Πρόγραμμα & ύλη πανελλαδικών εξετάσεων</a></p>
+   <p class="hint">Η εξεταστέα ύλη ανακοινώνεται κάθε χρόνο από το Υπουργείο — επιβεβαίωσέ την πριν το διάβασμα.</p>`;
+  host.appendChild(info);
+}
+function renderKt(host){
+  host.innerHTML='';
+  host.appendChild(el('div','notice','🔁 Οι <b>Κατατακτήριες</b> εξετάσεις αφορούν πτυχιούχους/φοιτητές που θέλουν να καταταγούν σε άλλο Τμήμα ΑΕΙ. Κάθε Τμήμα ορίζει <b>3 μαθήματα</b> και την ύλη τους. Καταχώρησε εδώ τα δικά σου και φτιάξε στοχευμένο πρόγραμμα.'));
+  const card=el('div','card');
+  const k=(S.profile&&S.profile.ktSubjects)||['','',''];
+  card.innerHTML=`<div class="tag">Ρύθμιση στόχου</div><h3>Τα στοιχεία των κατατακτηρίων σου</h3>`;
+  const dept=el('div');dept.innerHTML=`<label>Τμήμα / Σχολή στόχος</label><input id="kt-dept" value="${esc((S.profile&&S.profile.ktDept)||'')}" placeholder="π.χ. Νομική Αθηνών">`;
+  card.appendChild(dept);
+  ['1ο μάθημα','2ο μάθημα','3ο μάθημα'].forEach((lab,i)=>{
+    const d=el('div');d.innerHTML=`<label>${lab}</label><input class="kt-s" value="${esc(k[i]||'')}" placeholder="π.χ. Αστικό Δίκαιο">`;card.appendChild(d);
+  });
+  const dt=el('div');dt.innerHTML=`<label>Ημερομηνία εξέτασης (στόχος)</label><input type="date" id="kt-date" value="${esc((S.profile&&S.profile.targetDate)||'')}">`;card.appendChild(dt);
+  const b=el('button','btn','💾 Αποθήκευση στόχου');b.style.marginTop='12px';
+  b.onclick=()=>{
+    if(!S.profile)S.profile={name:'',type:'adult'};
+    S.profile.goal='kt';
+    S.profile.ktDept=$('#kt-dept').value.trim();
+    S.profile.ktSubjects=$$('.kt-s').map(x=>x.value.trim()).filter(Boolean);
+    S.profile.targetDate=$('#kt-date').value;
+    S.profile.goalLabel='Κατατακτήριες'+(S.profile.ktDept?' — '+S.profile.ktDept:'');
+    save();refreshWho();alert('Αποθηκεύτηκε! Πήγαινε στο 🗓️ Πρόγραμμα για αυτόματο πλάνο.');
+  };
+  card.appendChild(b);
+  host.appendChild(card);
+  const info=el('div','card');
+  info.innerHTML=`<div class="tag">Συμβουλές</div><h3>Πώς προετοιμάζομαι</h3>
+   <ul style="padding-left:18px">
+   <li>Βρες την <b>προκήρυξη</b> του Τμήματος (ύλη & συγγράμματα) στην ιστοσελίδα του.</li>
+   <li>Προμηθεύσου τα <b>πανεπιστημιακά συγγράμματα</b> που ορίζει η ύλη.</li>
+   <li>Λύσε <b>θέματα προηγούμενων ετών</b> — πολλά Τμήματα τα αναρτούν.</li>
+   <li>Χρησιμοποίησε το <b>αυτόματο πρόγραμμα</b> με βάση την ημερομηνία εξέτασης.</li></ul>
+   <p><a href="https://www.minedu.gov.gr/" target="_blank" rel="noopener">🏛️ Υπουργείο Παιδείας — θεσμικό πλαίσιο κατατακτηρίων</a></p>`;
+  host.appendChild(info);
+}
+
+/* =========================================================================
+   VIEW: CAREERS (Σχολές & Επαγγέλματα ανά πεδίο)
+   ========================================================================= */
+const fmtMoria=v=>v.toLocaleString('el-GR');
+function baseChart(base){
+  const ys=['22','23','24','25','26'];
+  const pts=ys.map(y=>({y,v:base[y]})).filter(p=>p.v!=null);
+  if(!pts.length) return '';
+  const vals=pts.map(p=>p.v), min=Math.min(...vals), max=Math.max(...vals), span=Math.max(1,max-min);
+  const W=320,H=118,padB=20,padT=20, n=pts.length, gap=14, barW=(W-gap*(n+1))/n;
+  let bars='';
+  pts.forEach((p,i)=>{
+    const x=gap+i*(barW+gap);
+    const h=12+(p.v-min)/span*(H-padB-padT-12);
+    const yTop=H-padB-h, latest=(p.y==='26');
+    bars+=`<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="4" fill="${latest?'#e8b74a':'#2f8fd8'}"/>`;
+    bars+=`<text x="${(x+barW/2).toFixed(1)}" y="${(yTop-5).toFixed(1)}" text-anchor="middle" font-size="9.5" fill="${latest?'#e8b74a':'var(--muted)'}" font-weight="${latest?'700':'400'}">${fmtMoria(p.v)}</text>`;
+    bars+=`<text x="${(x+barW/2).toFixed(1)}" y="${H-5}" text-anchor="middle" font-size="10" fill="var(--muted)">20${p.y}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:360px;height:auto;display:block">${bars}</svg>`;
+}
+function baseTrend(base){
+  const ys=['22','23','24','25','26'].filter(y=>base[y]!=null);
+  if(ys.length<2) return '';
+  const first=base[ys[0]], last=base[ys[ys.length-1]], d=last-first;
+  const arr=d>0?'▲':(d<0?'▼':'▬'), col=d>0?'#e8b74a':(d<0?'#e0505c':'var(--muted)');
+  let prev='';
+  if(base['25']!=null&&base['26']!=null){const dd=base['26']-base['25'];const s=dd>0?'+':'';prev=` · Φετινή (2026): <b>${fmtMoria(base['26'])}</b> vs Περσινή (2025): ${fmtMoria(base['25'])} <span style="color:${dd>0?'#e8b74a':(dd<0?'#e0505c':'var(--muted)')}">(${s}${fmtMoria(dd)})</span>`;}
+  return `<div class="hint" style="margin-top:6px">Τάση 20${ys[0]}→20${ys[ys.length-1]}: <span style="color:${col};font-weight:700">${arr} ${d>0?'+':''}${fmtMoria(d)} μόρια</span>${prev}</div>`;
+}
+function allSchoolsList(){
+  const D=window.SCHOOLS_DATA; if(!D||!D.rows) return [];
+  return D.rows.map((r,i)=>({id:i,d:r[0],inst:D.inst[r[1]],city:D.city[r[2]],type:D.type[r[3]],f:r[4],b26:r[5],b25:r[6]}));
+}
+/* ---- Αγαπημένες σχολές ---- */
+const favKey=s=>`${s.f}|${s.d}|${s.inst}`;
+const isFav=s=>S.favorites.some(x=>favKey(x)===favKey(s));
+function toggleFav(s){
+  const k=favKey(s), i=S.favorites.findIndex(x=>favKey(x)===k);
+  if(i>=0) S.favorites.splice(i,1);
+  else S.favorites.push({id:s.id,d:s.d,inst:s.inst,city:s.city,f:s.f,b26:s.b26,b25:s.b25});
+  save();
+}
+const favBtn=s=>`<button class="favtoggle" data-id="${s.id}" title="Αγαπημένη σχολή" style="background:none;border:0;cursor:pointer;font-size:1.15rem;padding:2px;color:${isFav(s)?'#e8b74a':'var(--muted)'}">${isFav(s)?'★':'☆'}</button>`;
+function wireFav(container,after){
+  $$('.favtoggle',container).forEach(b=>b.onclick=()=>{
+    const s=allSchoolsList()[+b.dataset.id]; if(!s)return;
+    toggleFav(s);
+    b.textContent=isFav(s)?'★':'☆'; b.style.color=isFav(s)?'#e8b74a':'var(--muted)';
+    if(after)after();
+  });
+}
+/* ---- Εκτίμηση μορίων από βαθμούς (κλασικός τύπος ΓΒΠ×8 + 1.3/0.7) ---- */
+const MORIA_W=[{a:1,b:2},{a:3,b:1},{a:3,b:2},{a:1,b:2}]; // a=×1.3, b=×0.7 (δείκτες στο FIELDS[f].subs)
+function computeMoria(field,g){ // g: [4] βαθμοί 0-20
+  const avg=(g[0]+g[1]+g[2]+g[3])/4, w=MORIA_W[field];
+  return Math.round((avg*8 + g[w.a]*1.3 + g[w.b]*0.7)*100);
+}
+function cityOptionsHtml(){
+  const D=window.SCHOOLS_DATA; if(!D) return '<option value="all">Όλες οι πόλεις</option>';
+  const cities=[...new Set(D.city.filter(x=>x&&!/προσδιορισ/i.test(x)))].sort((a,b)=>a.localeCompare(b,'el'));
+  return '<option value="all">Όλες οι πόλεις</option>'+cities.map(c=>`<option>${esc(c)}</option>`).join('');
+}
+/* Σύντομα ενδεικτικά επαγγέλματα από το όνομα του τμήματος (αντιστοίχιση λέξεων-κλειδιών). */
+const _norm=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const CAREER_RULES=[
+ // Στρατιωτικές / Αστυνομικές / Σώματα
+ ['ευελπιδων','Αξιωματικός Στρατού Ξηράς'],['ναυτικων δοκιμων','Αξιωματικός Πολεμικού Ναυτικού'],
+ ['ικαρων','Αξιωματικός/Ιπτάμενος Πολ. Αεροπορίας'],['αστυφυλακων','Αστυφύλακας'],
+ ['αξιωματικων ελληνικης αστυν','Αξιωματικός Αστυνομίας'],['αστυνομ','Αστυνομικός'],
+ ['πυροσβεστ','Πυροσβέστης / αξιωματικός'],['μονιμων υπαξιωματικων','Υπαξιωματικός Ενόπλων Δυνάμεων'],
+ ['ιπταμενων ραδιοναυτιλων','Στέλεχος Πολ. Αεροπορίας'],['σωματων','Αξιωματικός (υγειον./τεχν. σωμάτων)'],
+ ['λιμενοφυλακ','Λιμενοφύλακας'],['λιμενικ','Στέλεχος Λιμενικού Σώματος'],
+ // Υγεία
+ ['οδοντιατ','Οδοντίατρος'],['κτηνιατ','Κτηνίατρος'],['ιατρικ','Ιατρός, ειδικότητες, έρευνα'],
+ ['φαρμακ','Φαρμακοποιός, φαρμακοβιομηχανία'],['νοσηλευτ','Νοσηλευτής/τρια'],['μαιευτ','Μαία / Μαιευτής'],
+ ['φυσικοθεραπ','Φυσικοθεραπευτής/τρια'],['εργοθεραπ','Εργοθεραπευτής/τρια'],['λογοθεραπ','Λογοθεραπευτής/τρια'],
+ ['οπτικ','Οπτικός - οπτομέτρης'],['ακτινολογ','Τεχνολόγος ακτινολογίας'],['ραδιολογ','Τεχνολόγος ακτινολογίας'],
+ ['βιοιατρ','Τεχνολόγος ιατρικών εργαστηρίων'],['διατροφ','Διαιτολόγος - διατροφολόγος'],['διαιτολ','Διαιτολόγος - διατροφολόγος'],
+ ['δημοσιας υγειας','Στέλεχος δημόσιας υγείας'],
+ // Νομικές / Κοινωνικές / Ανθρωπιστικές
+ ['λογιστικ','Λογιστής, ελεγκτής, χρηματοοικονομικά'],['χρηματοοικ','Χρηματοοικονομικός αναλυτής'],['οικονομ','Οικονομολόγος, τράπεζες, ανάλυση'],
+ ['νομικ','Δικηγόρος, δικαστικός, νομικός σύμβουλος'],['ψυχολογ','Ψυχολόγος, σύμβουλος'],
+ ['κοινωνικης εργασιας','Κοινωνικός λειτουργός'],['κοινωνιολογ','Κοινωνιολόγος, έρευνα'],
+ ['κοινωνικης πολιτικ','Κοιν. πολιτική & πρόνοια'],['κοινωνικης','Κοινωνικές υπηρεσίες, έρευνα'],
+ ['νηπιαγωγ','Νηπιαγωγός'],['προσχολικ','Νηπιαγωγός / προσχολική αγωγή'],
+ ['δημοτικης εκπαιδευσ','Δάσκαλος/α, εκπαίδευση'],['παιδαγωγικ','Εκπαιδευτικός, παιδαγωγός'],
+ ['ειδικης αγωγης','Εκπαιδευτικός ειδικής αγωγής'],
+ ['αρχαιολογ','Αρχαιολόγος, μουσεία, καθηγητής'],['ιστορ','Καθηγητής/έρευνα ιστορίας'],
+ ['φιλολογ','Φιλόλογος, εκπαίδευση, εκδόσεις'],['φιλοσοφ','Καθηγητής, έρευνα, εκπαίδευση'],
+ ['θεολογ','Θεολόγος, εκπαίδευση'],['μεταφρασ','Μεταφραστής / διερμηνέας'],['διερμην','Μεταφραστής / διερμηνέας'],
+ ['αγγλικ','Καθηγητής ξένων γλωσσών'],['γαλλικ','Καθηγητής ξένων γλωσσών'],['γερμανικ','Καθηγητής ξένων γλωσσών'],
+ ['ιταλικ','Καθηγητής ξένων γλωσσών'],['ισπανικ','Καθηγητής ξένων γλωσσών'],
+ ['δημοσιογραφ','Δημοσιογράφος, ΜΜΕ, PR'],['επικοινωνιας','Επικοινωνία, ΜΜΕ, PR, marketing'],['μεσων μαζικ','ΜΜΕ, δημοσιογραφία, PR'],
+ ['πολιτικης επιστημ','Πολιτικός επιστήμονας, διεθνείς σχέσεις'],['πολιτικων επιστημ','Πολιτικός επιστήμονας, διεθνείς σχέσεις'],
+ ['διεθνων','Διεθνείς σχέσεις, διπλωματία'],
+ // Πολυτεχνικές / Θετικές / Πληροφορική
+ ['πληροφορικ','Προγραμματιστής, data, δίκτυα'],['μηχανικων η/υ','Μηχανικός Η/Υ, λογισμικό'],
+ ['ηλεκτρολογ','Ηλεκτρολόγος μηχανικός, ενέργεια'],['ηλεκτρονικ','Ηλεκτρονικός μηχανικός'],
+ ['μηχανολογ','Μηχανολόγος μηχανικός'],['αρχιτεκτ','Αρχιτέκτονας'],
+ ['πολιτικων μηχανικων','Πολιτικός μηχανικός, κατασκευές'],['χημικων μηχανικων','Χημικός μηχανικός, βιομηχανία'],
+ ['ναυπηγ','Ναυπηγός μηχανικός'],['τοπογραφ','Αγρονόμος-τοπογράφος μηχανικός'],['αγρονομων','Αγρονόμος-τοπογράφος μηχανικός'],
+ ['μεταλλει','Μηχανικός μεταλλείων-μεταλλουργός'],['μεταλλουργ','Μηχανικός μεταλλείων-μεταλλουργός'],
+ ['μηχανικων','Μηχανικός, μελέτες, βιομηχανία'],['μηχανικης','Μηχανικός, μελέτες, βιομηχανία'],
+ ['χημειας','Χημικός, εργαστήρια, εκπαίδευση'],['χημικων','Χημικός, εργαστήρια'],
+ ['φυσικης αγωγης','Καθηγητής φυσικής αγωγής, προπονητής'],['φυσικης','Φυσικός, έρευνα, εκπαίδευση'],
+ ['μαθηματ','Μαθηματικός, εκπαίδευση, data'],['στατιστικ','Στατιστικός, data analyst, αναλογιστής'],
+ ['βιοχημ','Βιοχημικός, έρευνα'],['βιοτεχνολ','Βιοτεχνολόγος, έρευνα'],['βιολογ','Βιολόγος, έρευνα, βιοτεχνολογία'],
+ ['γεωλογ','Γεωλόγος'],['γεωγραφ','Γεωγράφος, χωροταξία'],['περιβαλλον','Επιστήμονας περιβάλλοντος'],
+ ['γεωπον','Γεωπόνος'],['γεωργ','Γεωπόνος'],['αγροτικ','Αγροτική ανάπτυξη, γεωπονία'],['φυτικης','Γεωπόνος - φυτική παραγωγή'],['ζωικης','Γεωπόνος - ζωική παραγωγή'],
+ ['δασολογ','Δασολόγος'],['δασοπον','Δασολόγος / δασοπόνος'],
+ ['επιστημης τροφιμων','Τεχνολόγος τροφίμων'],['τροφιμων','Τεχνολόγος τροφίμων'],['οινολογ','Οινολόγος'],
+ ['ιχθυο','Επιστήμονας αλιείας/υδατοκαλλιεργειών'],['αλιειας','Επιστήμονας αλιείας'],['υδατοκαλλ','Υδατοκαλλιέργειες'],
+ // Οικονομικές / Διοίκηση / Τουρισμός
+ ['λογιστικ','Λογιστής, ελεγκτής, χρηματοοικονομικά'],['χρηματοοικ','Χρηματοοικονομικός αναλυτής'],
+ ['οικονομ','Οικονομολόγος, τράπεζες, ανάλυση'],
+ ['διοικησης επιχειρησ','Στέλεχος επιχειρήσεων, marketing, HR'],['οργανωσης','Στέλεχος επιχειρήσεων'],
+ ['μαρκετινγκ','Marketing, πωλήσεις, brand'],['μανατζμεντ','Στέλεχος διοίκησης (management)'],
+ ['δημοσιας διοικησης','Στέλεχος δημόσιας διοίκησης'],
+ ['τουρισ','Στέλεχος τουρισμού / φιλοξενίας'],['ξενοδοχ','Στέλεχος ξενοδοχείων'],
+ ['ναυτιλ','Στέλεχος ναυτιλίας / logistics'],['εφοδιαστικ','Logistics / εφοδιαστική αλυσίδα'],
+ ['επιχειρησ','Στέλεχος επιχειρήσεων'],['διοικησης','Στέλεχος διοίκησης'],
+ // Τέχνες
+ ['καλων τεχνων','Εικαστικός καλλιτέχνης'],['εικαστικ','Εικαστικός καλλιτέχνης'],
+ ['μουσικ','Μουσικός, εκπαιδευτικός μουσικής'],['θεατρ','Ηθοποιός/σκηνοθέτης, θέατρο'],
+ ['κινηματογρ','Σκηνοθεσία / κινηματογράφος'],['παραστατικ','Παραστατικές τέχνες'],
+ ['συντηρησης','Συντηρητής έργων τέχνης'],['φωτογραφ','Φωτογράφος / οπτικά μέσα'],
+ ['σχεδιασμ','Σχεδιαστής (design)'],
+ // Επιπλέον κάλυψη
+ ['διοικητικ','Στέλεχος διοίκησης / management'],['υλικων','Επιστήμονας υλικών, βιομηχανία/έρευνα'],
+ ['ωκεανογρ','Ωκεανογράφος, θαλάσσιες επιστήμες'],['θαλασσ','Θαλάσσιες επιστήμες, περιβάλλον'],
+ ['οινου','Οινολόγος'],['αμπελ','Οινολόγος - αμπελουργία'],
+ ['ηχου','Τεχνικός ήχου & εικόνας, media'],['εικονας','Οπτικοακουστικά μέσα, media'],
+ ['ιερατικ','Κληρικός / θεολόγος'],['αρχειον','Αρχειονόμος - βιβλιοθηκονόμος'],['βιβλιοθηκ','Βιβλιοθηκονόμος'],
+ ['πληροφορησ','Επιστήμη πληροφόρησης, αρχεία/βιβλιοθήκες'],
+ ['βαλκανικ','Περιφερειακές σπουδές & γλώσσες'],['σλαβικ','Σλαβικές σπουδές & γλώσσες'],['ανατολικ','Ανατολικές σπουδές & γλώσσες'],
+ ['φροντιδας','Αγωγή & φροντίδα προσχολικής ηλικίας'],['παιδικης ηλικιας','Αγωγή προσχολικής ηλικίας'],
+ ['υγειας','Στέλεχος δημόσιας/κοινοτικής υγείας'],['βιοεπιστ','Βιοεπιστήμες, έρευνα'],
+ ['πολιτισμ','Διαχείριση πολιτισμού & τουρισμού'],['χωροταξ','Χωροταξία & ανάπτυξη'],['γεωπληροφορ','Γεωπληροφορική'],
+ ['κτηνιατρ','Κτηνίατρος'],['ζωικ','Ζωική παραγωγή / γεωπονία'],
+ ['ψηφιακ','Ψηφιακά συστήματα, IT, τεχνολογία'],['πληροφοριας','Επιστήμη πληροφορίας, δεδομένα'],
+ ['αεροδιαστημ','Μηχανικός αεροδιαστημικής'],['ενεργει','Μηχανικός/τεχνολόγος ενέργειας'],
+ ['πλοιαρχ','Αξιωματικός Εμπ. Ναυτικού (πλοίαρχος)'],['μηχανικων ε','Αξιωματικός Εμπ. Ναυτικού (μηχανικός)'],
+ ['τουρκικ','Γλώσσες & περιφερειακές σπουδές'],['ασιατικ','Ασιατικές σπουδές & γλώσσες'],
+ ['ανθρωπιστικ','Ανθρωπιστικές σπουδές, εκπαίδευση, έρευνα'],['υπολογιστ','Επιστήμων υπολογιστών, λογισμικό, IT']
+];
+function careerHint(name){
+  const n=_norm(name);
+  for(const [k,v] of CAREER_RULES){ if(n.includes(k)) return v; }
+  return 'Απασχόληση στον κλάδο (δημόσιο/ιδιωτικό), εκπαίδευση & έρευνα';
+}
+function deltaHtml(b26,b25){
+  if(b26==null||b25==null) return '<span style="color:var(--muted)">—</span>';
+  const d=b26-b25,s=d>0?'+':'',col=d>0?'#e8b74a':(d<0?'#e0505c':'var(--muted)'),ar=d>0?'▲':(d<0?'▼':'▬');
+  return `<span style="color:${col};white-space:nowrap">${ar} ${s}${fmtMoria(d)}</span>`;
+}
+const defaultField=()=> (S.profile&&S.profile.goal==='pan'&&S.profile.field!=null)?String(S.profile.field):'all';
+
+function viewCareers(c){
+  c.appendChild(el('div','notice no-print','🏛️ Σχολές ανά επιστημονικό πεδίο: <b>τι μαθαίνεις</b>, <b>τι επαγγέλματα</b> ανοίγει, και οι <b>βάσεις (μόρια)</b>. ⚠️ Μόρια: ΓΕΛ 90% ημερήσια — πηγή <b>AeiTei.gr</b>/Υπ. Παιδείας (2026 ανακοιν. 23/7/2026). Περιλαμβάνονται ΑΕΙ, Στρατιωτικές/Αστυνομικές & ΤΕΦΑΑ.'));
+
+  const tabsBar=el('div','row no-print');tabsBar.style.marginBottom='8px';
+  const t1=el('button','btn','🎯 Βρες με τα μόριά μου');
+  const t2=el('button','btn ghost','⭐ Αναλυτικά (δημοφιλή)');
+  const t3=el('button','btn ghost','📋 Όλες οι σχολές');
+  const t4=el('button','btn ghost','⚖️ Σύγκριση');
+  [t1,t2,t3,t4].forEach(b=>{b.style.flex='1 1 auto';tabsBar.appendChild(b);});
+  c.appendChild(tabsBar);
+  const host=el('div');c.appendChild(host);
+  const setActive=b=>[t1,t2,t3,t4].forEach(x=>x.className=x===b?'btn':'btn ghost');
+  t1.onclick=()=>{setActive(t1);renderMatcher(host);};
+  t2.onclick=()=>{setActive(t2);renderFeatured(host);};
+  t3.onclick=()=>{setActive(t3);renderAll(host);};
+  t4.onclick=()=>{setActive(t4);renderCompare(host);};
+  renderMatcher(host);
+}
+/* CSV εξαγωγή λίστας σχολών (Excel-friendly: ; separator + BOM) */
+function schoolsCSV(list,fname){
+  const head=['Σχολή','Ίδρυμα','Πόλη','Πεδίο','Βάση 2026','Βάση 2025','Μεταβολή 25→26','Ενδεικτικά επαγγέλματα'];
+  const rows=list.map(s=>[s.d,s.inst,s.city,(s.f!=null?(s.f+1)+'ο Πεδίο':''),(s.b26!=null?s.b26:''),(s.b25!=null?s.b25:''),(s.b26!=null&&s.b25!=null?(s.b26-s.b25):''),careerHint(s.d)]);
+  const csv='﻿'+[head,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  const a=el('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=(fname||'sxoles')+'.csv';a.click();
+}
+/* CSV του «Πού μπαίνω»: σχολές που πιάνεις + στόχοι, με στήλη Κατάσταση & απόσταση */
+function matcherCSV(inside,near,m){
+  const head=['Κατάσταση','Σχολή','Ίδρυμα','Πόλη','Πεδίο','Βάση 2026','Βάση 2025','Μεταβολή 25→26','Απόσταση (μόριά μου − βάση)','Ενδεικτικά επαγγέλματα'];
+  const mk=(s,st)=>[st,s.d,s.inst,s.city,(s.f!=null?(s.f+1)+'ο Πεδίο':''),(s.b26!=null?s.b26:''),(s.b25!=null?s.b25:''),(s.b26!=null&&s.b25!=null?(s.b26-s.b25):''),(s.b26!=null?(m-s.b26):''),careerHint(s.d)];
+  const rows=[...inside.map(s=>mk(s,'Πιάνεις')),...near.map(s=>mk(s,'Στόχος (λίγο πιο πάνω)'))];
+  const csv='﻿'+[head,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+  const a=el('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='sxoles_pou_pianw.csv';a.click();
+}
+/* βρες αντίστοιχο «δημοφιλές» τμήμα (για γράφημα 5ετίας/μαθήματα στη σύγκριση) */
+function findFeatured(s){
+  return SCHOOLS.find(f=>f.f===s.f && _norm(f.n)===_norm(s.d) && (_norm(s.inst).includes(_norm(f.inst.split(' ')[0]))||_norm(s.city).includes(_norm((f.inst.match(/\(([^)]+)\)/)||[,''])[1].split(' ').pop()||''))));
+}
+
+/* --- 1) ΒΡΕΣ ΜΕ ΤΑ ΜΟΡΙΑ ΜΟΥ --- */
+function renderMatcher(host){
+  host.innerHTML='';
+  const card=el('div','card no-print');
+  card.innerHTML=`<div class="tag">Εύρεση σχολών</div><h3>🎯 Πού μπαίνω με τα μόριά μου;</h3>
+    <p class="hint">Βάλε τα μόρια που εκτιμάς ότι έχεις (0–20.000) και το πεδίο σου. Θα δεις τις σχολές που «πιάνεις» με βάση το 2026.</p>`;
+  const r=el('div','row');
+  r.innerHTML=`<div><label>Τα μόριά μου (εκτίμηση)</label><input id="mt-mor" type="number" min="0" max="20000" step="10" placeholder="π.χ. 16500" value="${(S.profile&&S.profile.myMoria)||''}"></div>
+    <div><label>Επιστημονικό πεδίο</label><select id="mt-field"><option value="all">Όλα τα πεδία</option>${FIELDS.map((f,i)=>`<option value="${i}">${canon(f.n)}</option>`).join('')}</select></div>
+    <div><label>Πόλη</label><select id="mt-city">${cityOptionsHtml()}</select></div>`;
+  card.appendChild(r);
+  const btn=el('button','btn','🔎 Βρες σχολές');btn.style.marginTop='12px';card.appendChild(btn);
+  host.appendChild(card);
+
+  // 🧮 Υπολογιστής μορίων από βαθμούς
+  const calc=el('div','card no-print');
+  calc.innerHTML=`<details><summary style="cursor:pointer;font-weight:600">🧮 Δεν ξέρεις τα μόριά σου; Υπολόγισέ τα από τους βαθμούς</summary><div id="calc-body" style="margin-top:12px"></div></details>`;
+  host.appendChild(calc);
+  const buildCalc=(field)=>{
+    const body=$('#calc-body',calc), subs=FIELDS[field].subs.map(canon), w=MORIA_W[field];
+    body.innerHTML=`<div class="row"><div><label>Πεδίο</label><select id="calc-field">${FIELDS.map((f,i)=>`<option value="${i}" ${i===field?'selected':''}>${canon(f.n).split('—')[0].trim()}</option>`).join('')}</select></div></div>
+      <p class="hint" style="margin:.5em 0">Βάλε τους βαθμούς σου (0–20). Τα μαθήματα ×1.3 / ×0.7 μετρούν περισσότερο.</p>
+      <div class="row">${subs.map((s,i)=>`<div><label>${esc(s)} ${i===w.a?'<span style="color:var(--gold)">×1.3</span>':i===w.b?'<span style="color:var(--gold)">×0.7</span>':''}</label><input class="calc-g" type="number" min="0" max="20" step="0.1" placeholder="0-20"></div>`).join('')}</div>
+      <button class="btn" id="calc-go" style="margin-top:12px">🧮 Υπολόγισε μόρια</button><div id="calc-res" style="margin-top:12px"></div>`;
+    $('#calc-field',body).onchange=e=>buildCalc(+e.target.value);
+    $('#calc-go',body).onclick=()=>{
+      const gs=$$('.calc-g',body).map(x=>Math.min(20,Math.max(0,parseFloat(x.value)||0)));
+      const m=computeMoria(field,gs);
+      $('#calc-res',body).innerHTML=`<div class="card" style="margin:0"><h3 style="color:var(--red2);margin:0">≈ ${fmtMoria(m)} μόρια</h3>
+        <p class="hint">Εκτίμηση με τον κλασικό τύπο (ΓΒΠ×8 + ×1.3 + ×0.7). Από το 2022 τα ακριβή μόρια εξαρτώνται από τους <b>συντελεστές βαρύτητας κάθε τμήματος</b> — χρησιμοποίησέ το ως προσανατολισμό.</p>
+        <button class="btn sm" id="calc-use">➡️ Χρήση στην «Βρες σχολές»</button></div>`;
+      $('#calc-use',body).onclick=()=>{$('#mt-mor').value=m;$('#mt-field').value=String(field);$('#mt-city').value='all';if(S.profile){S.profile.myMoria=m;save();}btn.onclick();window.scrollTo(0,0);};
+    };
+  };
+  buildCalc(defaultField()!=='all'?+defaultField():0);
+
+  const res=el('div');host.appendChild(res);
+  $('#mt-field').value=defaultField();
+  btn.onclick=()=>{
+    const m=parseInt($('#mt-mor').value,10);
+    if(isNaN(m)||m<=0){alert('Γράψε έγκυρα μόρια (π.χ. 16500).');return;}
+    if(S.profile){S.profile.myMoria=m;save();}
+    const fsel=$('#mt-field').value, citySel=$('#mt-city').value;
+    let list=allSchoolsList().filter(s=>s.b26!=null);
+    if(fsel!=='all') list=list.filter(s=>s.f===+fsel);
+    if(citySel&&citySel!=='all') list=list.filter(s=>s.city===citySel);
+    const inside=list.filter(s=>s.b26<=m).sort((a,b)=>b.b26-a.b26);
+    const near=list.filter(s=>s.b26>m && s.b26<=m+1000).sort((a,b)=>a.b26-b.b26);
+    res.innerHTML='';
+    const crit=`${fmtMoria(m)} μόρια · ${fsel!=='all'?canon(FIELDS[+fsel].n).split('—')[0].trim():'Όλα τα πεδία'}${citySel!=='all'?' · '+citySel:''}`;
+    const sum=el('div','card');
+    sum.innerHTML=`<div class="tag">Φύλλο «Πού μπαίνω»</div>
+      <h3 style="color:var(--red2)">✅ Πιάνεις ${inside.length} σχολές${fsel!=='all'?' στο '+canon(FIELDS[+fsel].n).split('—')[0].trim():''}</h3>
+      <p class="hint">${esc(crit)} · ${new Date().toLocaleDateString('el-GR')} — βάσεις 2026 (ΓΕΛ 90%), πηγή AeiTei.gr. Ταξινόμηση από την υψηλότερη βάση που «πιάνεις».</p>`;
+    const bar=el('div','row no-print');bar.style.marginTop='4px';
+    const pb=el('button','btn sm','🖨️ Εκτύπωση / PDF');pb.onclick=()=>window.print();
+    const cb=el('button','btn ghost sm','⬇️ Εξαγωγή CSV (Excel)');cb.onclick=()=>matcherCSV(inside,near,m);
+    bar.appendChild(pb);bar.appendChild(cb);sum.appendChild(bar);
+    res.appendChild(sum);
+    if(inside.length) res.appendChild(schoolsTable(inside,m));
+    if(near.length){
+      const nc=el('div','card');
+      nc.innerHTML=`<div class="tag">Στόχος</div><h3>🎯 Λίγο πιο πάνω (έως +1000 μόρια)</h3><p class="hint">Σχολές που θα «άνοιγαν» με λίγα παραπάνω μόρια — καλοί στόχοι.</p>`;
+      nc.appendChild(schoolsTable(near,m));
+      res.appendChild(nc);
+    }
+    if(!inside.length&&!near.length) res.appendChild(el('div','card','<p class="hint">Δεν βρέθηκαν σχολές. Δοκίμασε άλλα μόρια/πεδίο.</p>'));
+  };
+}
+function schoolsTable(list,myM){
+  const wrap=el('div','scrollx');
+  const cap= list.length>250;
+  const rows=(cap?list.slice(0,250):list).map(s=>{
+    const marg=(myM!=null&&s.b26!=null)?(myM-s.b26):null;
+    const margH=marg==null?'':`<span style="color:${marg>=0?'#e8b74a':'#e0505c'}">${marg>=0?'+':''}${fmtMoria(marg)}</span>`;
+    return `<tr><td style="text-align:center" class="no-print">${favBtn(s)}</td><td><b>${esc(s.d)}</b><br><small style="color:var(--muted)">${esc(s.inst)}</small><br><small style="color:var(--blue)">💼 ${esc(careerHint(s.d))}</small></td>
+      <td>${esc(s.city)}</td><td style="white-space:nowrap">${s.b26!=null?fmtMoria(s.b26):'—'}</td>
+      <td>${deltaHtml(s.b26,s.b25)}</td><td>${margH}</td></tr>`;
+  }).join('');
+  wrap.innerHTML=`<table><thead><tr><th class="no-print">★</th><th>Σχολή / Ίδρυμα</th><th>Πόλη</th><th>Βάση 2026</th><th>Δ 25→26</th><th>Περιθώριο</th></tr></thead><tbody>${rows}</tbody></table>${cap?'<p class="hint">Εμφανίζονται οι πρώτες 250 — στένεψε το πεδίο για λιγότερες.</p>':''}`;
+  wireFav(wrap);
+  return wrap;
+}
+
+/* --- 2) ΑΝΑΛΥΤΙΚΑ ΔΗΜΟΦΙΛΗ (με γραφήματα 5ετίας) --- */
+function renderFeatured(host){
+  host.innerHTML='';
+  const ctl=el('div','card no-print');
+  ctl.innerHTML=`<div class="tag">Φίλτρα</div><p class="hint">Επιλεγμένα δημοφιλή τμήματα με ανάλυση μαθημάτων, επαγγελμάτων & <b>5ετούς πορείας (2022–2026)</b>.</p>`;
+  const row=el('div','row');
+  row.innerHTML=`<div><label>Επιστημονικό πεδίο</label><select id="cr-field"><option value="all">Όλα τα πεδία</option>${FIELDS.map((f,i)=>`<option value="${i}">${canon(f.n)}</option>`).join('')}</select></div>
+    <div><label>Αναζήτηση τμήματος</label><input id="cr-q" placeholder="π.χ. Ιατρική, Πληροφορική..."></div>`;
+  ctl.appendChild(row);host.appendChild(ctl);
+  const list=el('div');host.appendChild(list);
+  function draw(){
+    list.innerHTML='';
+    const fsel=$('#cr-field').value, q=($('#cr-q').value||'').trim().toLowerCase();
+    let items=SCHOOLS.slice();
+    if(fsel!=='all') items=items.filter(s=>s.f===+fsel);
+    if(q) items=items.filter(s=>(s.n+' '+s.inst).toLowerCase().includes(q));
+    if(!items.length){list.appendChild(el('div','card','<p class="hint">Δεν βρέθηκε τμήμα.</p>'));return;}
+    FIELDS.forEach((f,fi)=>{
+      const g=items.filter(s=>s.f===fi); if(!g.length) return;
+      const head=el('div','card');head.style.cssText='background:linear-gradient(90deg,var(--redsoft),transparent)';
+      head.innerHTML=`<div class="tag">${f.group.replace(/&amp;/g,'&')}</div><h3 style="margin:0">${canon(f.n)}</h3>`;
+      list.appendChild(head);
+      g.forEach(s=>{
+        const card=el('div','card');
+        card.innerHTML=`<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+            <h3 style="margin:0">${esc(s.n)}</h3><span class="tag" style="color:var(--muted)">${esc(s.inst)}</span></div>
+          <div class="grid g2" style="margin-top:10px;align-items:start">
+            <div><p style="margin:.2em 0"><b>📘 Τι μαθαίνεις:</b></p>
+              <div>${s.courses.map(x=>`<span class="pill">${esc(x)}</span>`).join('')}</div>
+              <p style="margin:.8em 0 .2em"><b>💼 Επαγγέλματα:</b></p>
+              <ul style="margin:.2em 0;padding-left:18px">${s.jobs.map(x=>`<li style="margin:3px 0">${esc(x)}</li>`).join('')}</ul></div>
+            <div><p style="margin:.2em 0"><b>📊 Βάση (μόρια) — 5ετία:</b></p>${baseChart(s.base)}${baseTrend(s.base)}</div>
+          </div>`;
+        list.appendChild(card);
+      });
+    });
+  }
+  $('#cr-field').value=defaultField();
+  $('#cr-field').onchange=draw; $('#cr-q').oninput=draw; draw();
+}
+
+/* --- 3) ΟΛΕΣ ΟΙ ΣΧΟΛΕΣ --- */
+function renderAll(host){
+  host.innerHTML='';
+  const D=window.SCHOOLS_DATA;
+  const ctl=el('div','card no-print');
+  ctl.innerHTML=`<div class="tag">Όλες οι σχολές</div><p class="hint">${D?D.rows.length:0} τμήματα (ΑΕΙ, Στρατιωτικές/Αστυνομικές, ΤΕΦΑΑ). Βάσεις 2026 & μεταβολή από 2025.</p>`;
+  const row=el('div','row');
+  row.innerHTML=`<div><label>Επιστημονικό πεδίο</label><select id="al-field"><option value="all">Όλα τα πεδία</option>${FIELDS.map((f,i)=>`<option value="${i}">${canon(f.n)}</option>`).join('')}</select></div>
+    <div><label>Πόλη</label><select id="al-city">${cityOptionsHtml()}</select></div>
+    <div><label>Αναζήτηση (σχολή / ίδρυμα)</label><input id="al-q" placeholder="π.χ. Νοσηλευτ, Στρατιωτ..."></div>`;
+  ctl.appendChild(row);host.appendChild(ctl);
+  const out=el('div');host.appendChild(out);
+  function draw(){
+    const fsel=$('#al-field').value, citySel=$('#al-city').value, q=($('#al-q').value||'').trim().toLowerCase();
+    let list=allSchoolsList();
+    if(fsel!=='all') list=list.filter(s=>s.f===+fsel);
+    if(citySel&&citySel!=='all') list=list.filter(s=>s.city===citySel);
+    if(q) list=list.filter(s=>(s.d+' '+s.inst+' '+s.type).toLowerCase().includes(q));
+    list.sort((a,b)=>(b.b26==null?-1:b.b26)-(a.b26==null?-1:a.b26));
+    const cap=list.length>400, show=cap?list.slice(0,400):list;
+    const rows=show.map(s=>`<tr><td style="text-align:center">${favBtn(s)}</td><td><b>${esc(s.d)}</b><br><small style="color:var(--muted)">${esc(s.inst)}</small><br><small style="color:var(--blue)">💼 ${esc(careerHint(s.d))}</small></td>
+      <td>${esc(s.city)}</td><td><small>${esc(s.type)}</small></td>
+      <td style="white-space:nowrap">${s.b26!=null?fmtMoria(s.b26):'—'}</td><td>${deltaHtml(s.b26,s.b25)}</td></tr>`).join('');
+    out.innerHTML=`<div class="card"><p class="hint">${list.length} αποτελέσματα${cap?' (εμφανίζονται 400 — στένεψε την αναζήτηση)':''} · πάτησε ☆ για αγαπημένα (φαίνονται στην Αρχική)</p>
+      <div class="scrollx" style="max-height:70vh;overflow:auto">
+      <table><thead><tr><th>★</th><th>Σχολή / Ίδρυμα</th><th>Πόλη</th><th>Τύπος</th><th>Βάση 2026</th><th>Δ 25→26</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="6">Καμία σχολή.</td></tr>'}</tbody></table></div></div>`;
+    wireFav(out);
+  }
+  $('#al-field').value=defaultField();
+  $('#al-field').onchange=draw; $('#al-city').onchange=draw; $('#al-q').oninput=draw; draw();
+}
+
+/* --- 4) ΣΥΓΚΡΙΣΗ 2–3 ΣΧΟΛΩΝ --- */
+function renderCompare(host){
+  host.innerHTML='';
+  const L=allSchoolsList();
+  if(!window.__cmp) window.__cmp=[];
+  const ctl=el('div','card no-print');
+  ctl.innerHTML=`<div class="tag">Σύγκριση</div><h3>⚖️ Σύγκρινε 2–3 σχολές δίπλα-δίπλα</h3>
+    <p class="hint">Διάλεξε σχολή και πάτησε «Προσθήκη» (έως 3). Δες βάσεις, μεταβολή, πόλη & επαγγέλματα μαζί.</p>`;
+  const opts=L.map((s,i)=>`<option value="${i}">${esc(s.d)} — ${esc(s.inst)}${s.city?' ('+esc(s.city)+')':''}${s.b26!=null?' · '+fmtMoria(s.b26):''}</option>`).join('');
+  const rowSel=el('div','row');
+  rowSel.innerHTML=`<div style="flex:4"><label>Σχολή</label><select id="cmp-sel">${opts}</select></div>
+    <div style="flex:0 0 auto;display:flex;align-items:flex-end;gap:8px">
+      <button class="btn" id="cmp-add">➕ Προσθήκη</button>
+      <button class="btn ghost" id="cmp-clr">🗑️ Καθαρισμός</button></div>`;
+  ctl.appendChild(rowSel);host.appendChild(ctl);
+  const out=el('div');host.appendChild(out);
+  function draw(){
+    const items=window.__cmp.map(i=>L[i]).filter(Boolean);
+    if(!items.length){out.innerHTML='<div class="card"><p class="hint">Δεν έχεις επιλέξει σχολές ακόμα.</p></div>';return;}
+    const anyFeat=items.some(s=>findFeatured(s));
+    const attr=(label,fn)=>`<tr><th style="text-align:left;white-space:nowrap;color:var(--muted)">${label}</th>${items.map(s=>`<td>${fn(s)}</td>`).join('')}</tr>`;
+    let html=`<div class="card">
+      <div class="row no-print" style="justify-content:flex-end;gap:8px;margin-bottom:8px">
+        <button class="btn ghost sm" id="cmp-csv" style="flex:0 0 auto">⬇️ CSV</button>
+        <button class="btn ghost sm" id="cmp-print" style="flex:0 0 auto">🖨️ Εκτύπωση / PDF</button></div>
+      <div class="scrollx"><table><thead><tr><th></th>
+      ${items.map((s,i)=>`<th style="min-width:150px">${esc(s.d)}<br><button class="btn ghost sm no-print" data-rm="${i}" style="margin-top:4px">✕ Αφαίρεση</button></th>`).join('')}
+      </tr></thead><tbody>
+      ${attr('Ίδρυμα',s=>esc(s.inst))}
+      ${attr('Πόλη',s=>esc(s.city)||'—')}
+      ${attr('Πεδίο',s=>s.f!=null?(s.f+1)+'ο Πεδίο':'—')}
+      ${attr('💼 Επαγγέλματα',s=>{const f=findFeatured(s);return f?('<ul style="margin:0;padding-left:16px">'+f.jobs.map(x=>`<li>${esc(x)}</li>`).join('')+'</ul>'):esc(careerHint(s.d));})}
+      ${anyFeat?attr('📘 Τι μαθαίνεις',s=>{const f=findFeatured(s);return f?f.courses.map(x=>`<span class="pill">${esc(x)}</span>`).join(''):'—';}):''}
+      ${attr('Βάση 2026',s=>s.b26!=null?'<b style="color:var(--red2)">'+fmtMoria(s.b26)+'</b>':'—')}
+      ${attr('Βάση 2025',s=>s.b25!=null?fmtMoria(s.b25):'—')}
+      ${attr('Μεταβολή 25→26',s=>deltaHtml(s.b26,s.b25))}
+      ${attr('📊 Βάσεις 5ετίας',s=>{const f=findFeatured(s);return f?baseChart(f.base):'<span class="hint">δες «Αναλυτικά»</span>';})}
+      </tbody></table></div></div>`;
+    out.innerHTML=html;
+    $$('[data-rm]',out).forEach(b=>b.onclick=()=>{window.__cmp.splice(+b.dataset.rm,1);draw();});
+    const pr=$('#cmp-print',out); if(pr) pr.onclick=()=>window.print();
+    const cx=$('#cmp-csv',out); if(cx) cx.onclick=()=>schoolsCSV(items,'sygkrisi_sxolon');
+  }
+  $('#cmp-add').onclick=()=>{const i=+$('#cmp-sel').value;if(window.__cmp.length>=3){alert('Μπορείς να συγκρίνεις έως 3 σχολές.');return;}if(window.__cmp.includes(i))return;window.__cmp.push(i);draw();};
+  $('#cmp-clr').onclick=()=>{window.__cmp=[];draw();};
+  draw();
+}
+
+/* =========================================================================
+   VIEW: SYLLABUS (εξεταστέα ύλη ανά έτος)
+   ========================================================================= */
+function viewSyllabus(c){
+  c.appendChild(el('div','notice','📑 Η <b>εξεταστέα ύλη</b> των Πανελλαδικών (Γ΄ Λυκείου) ανά μάθημα. ⚠️ Η επίσημη ύλη <b>ανακοινώνεται κάθε έτος</b> από το Υπουργείο Παιδείας/ΙΕΠ — τα κεφάλαια εδώ είναι της πιο πρόσφατης ύλης· επιβεβαίωσέ τα με τον επίσημο σύνδεσμο κάθε μαθήματος.'));
+
+  // controls
+  const ctl=el('div','card no-print');
+  ctl.innerHTML=`<div class="tag">Ρυθμίσεις προβολής</div>`;
+  const row=el('div','row');
+  row.innerHTML=`<div><label>Σχολικό έτος εξετάσεων</label><select id="sy-year">${SYLLABUS_YEARS.map(y=>`<option>${y}</option>`).join('')}</select></div>
+    <div><label>Πεδίο / μαθήματα</label><select id="sy-field"><option value="all">Όλα τα μαθήματα</option>${FIELDS.map((f,i)=>`<option value="${i}">${canon(f.n)}</option>`).join('')}</select></div>`;
+  ctl.appendChild(row);
+  c.appendChild(ctl);
+
+  // Θέματα προηγούμενων ετών
+  const pp=el('div','card');
+  pp.innerHTML=`<div class="tag">Εξάσκηση</div><h3>📄 Θέματα &amp; Λύσεις Προηγούμενων Ετών</h3>
+    <p class="hint" style="margin:.2em 0 .8em">Η καλύτερη προετοιμασία: λύσε θέματα παλαιότερων Πανελλαδικών ανά μάθημα.</p>`;
+  const ppg=el('div','grid g2');
+  PASTPAPERS.forEach(s=>{
+    const cc=el('div');cc.style.cssText='border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--bg2)';
+    cc.innerHTML=`<div style="font-size:1.3rem">${s.ic}</div><b style="display:block;margin:4px 0">${s.t}</b>
+      <span class="hint">${s.d}</span><br><a class="btn ghost sm" style="text-decoration:none;display:inline-block;margin-top:8px" href="${s.u}" target="_blank" rel="noopener">Άνοιγμα →</a>`;
+    ppg.appendChild(cc);
+  });
+  pp.appendChild(ppg);
+  c.appendChild(pp);
+
+  const host=el('div');c.appendChild(host);
+
+  function render(){
+    host.innerHTML='';
+    const year=$('#sy-year').value;
+    const fsel=$('#sy-field').value;
+    // year source note
+    const yc=el('div','card');
+    yc.innerHTML=`<div class="tag">Επίσημες πηγές — έτος ${esc(year)}</div>
+      <p style="margin:.3em 0">Πάντα ελέγχεις την ισχύουσα ύλη από:</p>
+      <p><a href="${SYLLABUS_SRC.overview}" target="_blank" rel="noopener">🗂️ Εξεταστέα ύλη πανελλαδικών (klimaka)</a></p>
+      <p><a href="${SYLLABUS_SRC.iep}" target="_blank" rel="noopener">🏛️ ΙΕΠ — Ύλη & οδηγίες διδασκαλίας</a> · <a href="${SYLLABUS_SRC.minedu}" target="_blank" rel="noopener">Υπουργείο Παιδείας</a></p>`;
+    host.appendChild(yc);
+    // which subjects
+    let subjects;
+    if(fsel==='all') subjects=Object.keys(SYLLABUS);
+    else subjects=FIELDS[+fsel].subs.map(canon).filter(s=>SYLLABUS[s]);
+    subjects.forEach(s=>{
+      const d=SYLLABUS[s];if(!d)return;
+      const card=el('div','card');
+      card.innerHTML=`<div class="tag">Εξεταστέα ύλη</div><h3>${esc(s)}</h3>
+        <p class="hint" style="margin:.2em 0 .6em"><b>Βιβλίο:</b> ${esc(d.book)}</p>
+        <ul style="margin:.3em 0;padding-left:20px">${d.units.map(u=>`<li style="margin:5px 0">${esc(u)}</li>`).join('')}</ul>
+        <a class="btn ghost sm" style="text-decoration:none;display:inline-block;margin-top:6px" href="${d.link}" target="_blank" rel="noopener">🔗 Επίσημη ύλη μαθήματος →</a>`;
+      host.appendChild(card);
+    });
+    if(!subjects.length) host.appendChild(el('div','card','<p class="hint">Δεν υπάρχει καταχωρημένη ύλη για την επιλογή.</p>'));
+  }
+  // preselect user's field
+  $('#sy-field').value = (S.profile&&S.profile.goal==='pan'&&S.profile.field!=null) ? String(S.profile.field) : 'all';
+  $('#sy-year').onchange=render; $('#sy-field').onchange=render;
+  render();
+}
+
+/* =========================================================================
+   VIEW: SCHEDULE (auto generator)
+   ========================================================================= */
+function targetSubjects(){
+  const p=S.profile; if(!p) return allSubjects().slice(0,6);
+  if(p.goal==='pan'&&p.field!=null&&FIELDS[p.field]) return FIELDS[p.field].subs.map(s=>s.replace(/&amp;/g,'&'));
+  if(p.goal==='kt'&&p.ktSubjects&&p.ktSubjects.length) return p.ktSubjects;
+  // general: subjects of the grade
+  if(p.gradeCode){const g=LEVELS.flatMap(l=>l.grades).find(x=>x.code===p.gradeCode);if(g)return g.subjects.map(s=>s.replace(/&amp;/g,'&')).filter(s=>!/Αγωγή|Μουσική|Καλλιτεχνικά|Οικιακή/.test(s));}
+  return allSubjects().slice(0,8);
+}
+/* Μέση επίδοση (%) στα κουίζ για ένα μάθημα του προγράμματος (ή null αν δεν υπάρχουν δεδομένα) */
+function masteryFor(subject){
+  const b=_norm(subject);
+  const rel=(S.quizScores||[]).filter(x=>{const a=_norm(x.subject);return a===b||a.includes(b)||b.includes(a)||a.split(' ')[0]===b.split(' ')[0];});
+  if(!rel.length) return null;
+  const tot=rel.reduce((s,x)=>s+x.total,0),got=rel.reduce((s,x)=>s+x.score,0);
+  return tot?Math.round(got/tot*100):null;
+}
+/* Βάρος μαθήματος στο πρόγραμμα (περισσότερες ώρες για αδύναμα/χαμηλές επιδόσεις) */
+function subjWeight(s,weak){
+  let w=2;
+  if(weak.includes(s)) w+=1;
+  const m=masteryFor(s);
+  if(m!=null){ if(m<50)w+=2; else if(m<70)w+=1; else if(m>=85)w-=1; }
+  return Math.max(1,w);
+}
+const DAYNAMES=['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή','Σάββατο','Κυριακή'];
+function scheduleMonday(){const t=new Date();t.setHours(0,0,0,0);const off=(t.getDay()+6)%7;t.setDate(t.getDate()-off);return t;}
+function dayDate(w,d){const m=scheduleMonday();const dt=new Date(m);dt.setDate(m.getDate()+w*7+d);return dt;}
+function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+function daysUntil(iso){if(!iso)return null;const t=new Date();t.setHours(0,0,0,0);const e=new Date(iso);e.setHours(0,0,0,0);return Math.round((e-t)/(1000*3600*24));}
+function todayPlan(){
+  if(!S.schedule||!S.schedule.plan) return null;
+  const today=new Date();today.setHours(0,0,0,0);
+  const sc=S.schedule;
+  for(let w=0;w<sc.plan.length;w++)for(let d=0;d<sc.plan[w].days.length;d++){
+    if(sameDay(dayDate(w,d),today)) return {w,d,rev:sc.plan[w].rev,sessions:sc.plan[w].days[d].sessions};
+  }
+  return null;
+}
+function buildSchedule(){
+  const p=S.profile||{};
+  const hours=Math.max(1,+p.hoursDay||2);
+  const days=Math.max(1,Math.min(7,+p.daysWeek||5));
+  const perDay=Math.max(1,Math.round(hours));
+  let subs=targetSubjects().slice();
+  const weak=(p.weak||[]).map(x=>x.replace(/&amp;/g,'&'));
+  let pool=[];
+  subs.forEach(s=>{const w=subjWeight(s,weak);for(let i=0;i<w;i++)pool.push(s);});
+  if(!pool.length)pool=['Μελέτη'];
+  let weeks=8;
+  if(p.targetDate){const d=(new Date(p.targetDate)-new Date())/(1000*3600*24);weeks=Math.max(1,Math.min(40,Math.ceil(d/7)));}
+  const showWeeks=Math.min(weeks,8);
+  const topicIdx={};
+  const nextTopic=subj=>{const sy=SYLLABUS[canon(subj)];if(!sy||!sy.units||!sy.units.length)return '';const i=(topicIdx[subj]||0)%sy.units.length;topicIdx[subj]=(topicIdx[subj]||0)+1;return sy.units[i];};
+  let pi=0;const plan=[];
+  for(let w=0;w<showWeeks;w++){
+    const isRev=showWeeks>=3 && w>=showWeeks-1; // τελευταία εβδομάδα = επανάληψη
+    const week={label:'Εβδομάδα '+(w+1),rev:isRev,days:[]};
+    for(let d=0;d<days;d++){
+      const sessions=[];
+      for(let s=0;s<perDay;s++){const subj=pool[pi%pool.length];pi++;sessions.push({subject:subj,topic:isRev?'':nextTopic(subj),rev:isRev});}
+      week.days.push({sessions});
+    }
+    plan.push(week);
+  }
+  return {hours,days,perDay,weeks,plan,goal:p.goalLabel||'Γενική μελέτη',target:p.targetDate||''};
+}
+function escICS(s){return String(s).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');}
+function exportICS(){
+  const sc=S.schedule; if(!sc){alert('Φτιάξε πρώτα πρόγραμμα.');return;}
+  const p2=n=>String(n).padStart(2,'0');
+  const stamp=d=>`${d.getFullYear()}${p2(d.getMonth()+1)}${p2(d.getDate())}T${p2(d.getHours())}${p2(d.getMinutes())}00`;
+  const at=(dt,h)=>`${dt.getFullYear()}${p2(dt.getMonth()+1)}${p2(dt.getDate())}T${p2(h)}0000`;
+  const startHour=17; let ev=''; const now=stamp(new Date());
+  sc.plan.forEach((week,wi)=>week.days.forEach((d,di)=>{
+    const dt=dayDate(wi,di);
+    d.sessions.forEach((s,si)=>{
+      const sh=Math.min(22,startHour+si);
+      ev+=`BEGIN:VEVENT\r\nUID:sxoleio-${wi}-${di}-${si}-${Date.now()}${si}@sxoleio360\r\nDTSTAMP:${now}\r\nDTSTART:${at(dt,sh)}\r\nDTEND:${at(dt,sh+1)}\r\n`+
+          `SUMMARY:${escICS((s.rev?'🔁 Επανάληψη: ':'📚 ')+s.subject)}\r\nDESCRIPTION:${escICS((s.topic||'Μελέτη')+' — ΣΧΟΛΕΙΟ 360°')}\r\nEND:VEVENT\r\n`;
+    });
+  }));
+  const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SXOLEIO360//EL\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:Πρόγραμμα Διαβάσματος\r\n${ev}END:VCALENDAR\r\n`;
+  const a=el('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));a.download='programma_diavasmatos.ics';a.click();
+}
+function viewSchedule(c){
+  if(!S.profile){
+    c.appendChild(el('div','notice','⚠️ Χρειάζεται προφίλ για αυτόματο πρόγραμμα.'));
+    const b=el('button','btn','🚀 Συμπλήρωσε προφίλ');b.onclick=openOnboard;c.appendChild(b);return;
+  }
+  const bar=el('div','row no-print');bar.style.marginBottom='12px';
+  const gen=el('button','btn','⚙️ Δημιουργία / Ανανέωση');
+  const ics=el('button','btn ghost','📅 Εξαγωγή σε ημερολόγιο (.ics)');ics.onclick=exportICS;
+  const pr=el('button','btn ghost','🖨️ Εκτύπωση');pr.onclick=()=>window.print();
+  bar.appendChild(gen);bar.appendChild(ics);bar.appendChild(pr);c.appendChild(bar);
+  const host=el('div',null);c.appendChild(host);
+  gen.onclick=()=>{S.schedule=buildSchedule();save();renderSchedule(host);};
+  if(!S.schedule)S.schedule=buildSchedule(),save();
+  renderSchedule(host);
+}
+function renderSchedule(host){
+  host.innerHTML='';
+  const sc=S.schedule;
+  const dU=daysUntil(sc.target);
+  const info=el('div','card');
+  info.innerHTML=`<div class="tag">Το πλάνο σου</div><h3>🗓️ Πρόγραμμα Διαβάσματος — ${esc(sc.goal)}</h3>
+   <div class="grid g3" style="margin-top:10px">
+     ${dU!=null?`<div class="stat"><b style="color:${dU<0?'var(--muted)':'#e8b74a'}">${dU<0?'—':dU}</b><span>${dU<0?'πέρασε η ημ/νία':'ημέρες ως τις εξετάσεις'}</span></div>`:`<div class="stat"><b>${sc.weeks}</b><span>εβδ. ως στόχο</span></div>`}
+     <div class="stat"><b>${sc.hours}ω</b><span>ανά ημέρα</span></div>
+     <div class="stat"><b>${sc.days}</b><span>ημέρες/εβδ.</span></div>
+   </div>
+   <p class="hint">Πραγματικές ημερομηνίες — η <b>σημερινή</b> τονίζεται. Τα κεφάλαια προέρχονται από την Εξεταστέα Ύλη. <b>Προσαρμόζεται στις επιδόσεις σου στα κουίζ.</b> Τσέκαρε ό,τι ολοκληρώνεις.</p>`;
+  host.appendChild(info);
+  // 🎯 Εστίαση βάσει επιδόσεων
+  {
+    const weakP=((S.profile&&S.profile.weak)||[]).map(x=>x.replace(/&amp;/g,'&'));
+    const subsF=targetSubjects().map(x=>x.replace(/&amp;/g,'&'));
+    const withM=subsF.map(s=>({s,m:masteryFor(s),w:subjWeight(s,weakP)})).sort((a,b)=>(a.m==null?101:a.m)-(b.m==null?101:b.m));
+    if(withM.some(x=>x.m!=null)){
+      const fc=el('div','card');
+      fc.innerHTML=`<div class="tag">Προσαρμογή</div><h3>🎯 Εστίαση βάσει επιδόσεων στα κουίζ</h3><p class="hint">Τα μαθήματα με χαμηλότερες επιδόσεις παίρνουν περισσότερες ώρες. Λύσε κουίζ και πάτησε «Δημιουργία/Ανανέωση».</p>`;
+      const t=el('table');t.innerHTML='<thead><tr><th>Μάθημα</th><th style="width:160px">Επίδοση κουίζ</th><th>Προτεραιότητα</th></tr></thead>';
+      const tb=el('tbody');
+      withM.forEach(x=>{
+        const pr=x.w>=4?'<span class="pill red">Υψηλή</span>':x.w>=3?'<span class="pill">Μέτρια</span>':'<span class="pill">Κανονική</span>';
+        const bar=x.m==null?'<span class="hint">—</span>':`<div class="progress" style="margin:0"><i style="width:${x.m}%;background:${x.m<50?'#e0505c':x.m<70?'var(--gold)':'linear-gradient(90deg,var(--red),var(--red2))'}"></i></div><small class="hint">${x.m}%</small>`;
+        tb.innerHTML+=`<tr><td><b>${esc(x.s)}</b></td><td>${bar}</td><td>${pr}</td></tr>`;
+      });
+      t.appendChild(tb);const sw=el('div','scrollx');sw.appendChild(t);fc.appendChild(sw);host.appendChild(fc);
+    }
+  }
+  const today=new Date();today.setHours(0,0,0,0);
+  sc.plan.forEach((week,wi)=>{
+    const card=el('div','card');
+    card.innerHTML=`<h3>${week.label} ${week.rev?'<span class="pill red">🔁 Επανάληψη</span>':''}</h3>`;
+    const tbl=el('table');
+    tbl.innerHTML='<thead><tr><th style="width:140px">Ημέρα</th><th>Πρόγραμμα μελέτης</th></tr></thead>';
+    const tb=el('tbody');
+    week.days.forEach((d,di)=>{
+      const dt=dayDate(wi,di), isToday=sameDay(dt,today), isPast=dt<today;
+      const tr=el('tr'); if(isToday) tr.style.background='var(--redsoft)';
+      const dlabel=`${DAYNAMES[di%7]}<br><small style="color:var(--muted)">${dt.toLocaleDateString('el-GR',{day:'2-digit',month:'2-digit'})}</small>${isToday?' <span class="pill red">σήμερα</span>':''}`;
+      const sess=d.sessions.map((s,si)=>{
+        const id=`${wi}-${di}-${si}`, ck=S.done[id]?'checked':'';
+        const topic=s.topic?` <small style="color:var(--blue)">— ${esc(s.topic)}</small>`:'';
+        return `<label style="display:flex;align-items:flex-start;gap:6px;margin:4px 0;cursor:pointer${isPast&&!ck?';opacity:.6':''}">
+          <input type="checkbox" style="width:auto;margin-top:3px" data-id="${id}" ${ck}> <span>${s.rev?'🔁 ':''}<b>${esc(s.subject)}</b>${topic} <small style="color:var(--muted)">(1ω)</small></span></label>`;
+      }).join('');
+      tr.innerHTML=`<td><b>${dlabel}</b></td><td>${sess}</td>`;
+      tb.appendChild(tr);
+    });
+    tbl.appendChild(tb);const sw=el('div','scrollx');sw.appendChild(tbl);card.appendChild(sw);host.appendChild(card);
+  });
+  $$('input[type=checkbox][data-id]',host).forEach(cb=>cb.onchange=()=>{S.done[cb.dataset.id]=cb.checked;save();if(cb.checked)touchActivity();});
+}
+
+/* =========================================================================
+   VIEW: LIBRARY
+   ========================================================================= */
+/* ---- Offline αρχεία χρήστη (IndexedDB) ---- */
+function idbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open('sxoleio360-files',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('files'))r.result.createObjectStore('files',{keyPath:'id'});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function idbAll(){const db=await idbOpen();return new Promise((res,rej)=>{const t=db.transaction('files','readonly').objectStore('files').getAll();t.onsuccess=()=>res(t.result||[]);t.onerror=()=>rej(t.error);});}
+async function idbPut(rec){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').put(rec);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+async function idbDel(id){const db=await idbOpen();return new Promise((res,rej)=>{const tx=db.transaction('files','readwrite');tx.objectStore('files').delete(id);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+const fmtBytes=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':(n/1024).toFixed(0)+' KB';
+function openLocalFile(rec){
+  const url=URL.createObjectURL(rec.blob);
+  const isPdf=/pdf/i.test(rec.type)||/\.pdf$/i.test(rec.name);
+  const isImg=/^image\//i.test(rec.type)||/\.(png|jpe?g|gif|webp|svg)$/i.test(rec.name);
+  if(!isPdf&&!isImg){const a=el('a');a.href=url;a.download=rec.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),8000);return;}
+  const ov=el('div','overlay');ov.style.padding='0';ov.style.zIndex='60';
+  const box=el('div');box.style.cssText='width:100%;height:100%;display:flex;flex-direction:column';
+  const bar=el('div');bar.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line)';
+  bar.innerHTML=`<b style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📄 ${esc(rec.name)}</b>`;
+  const grp=el('div','row');grp.style.cssText='flex:0 0 auto;gap:8px';
+  const dl=el('button','btn ghost sm','⬇️ Λήψη');dl.onclick=()=>{const a=el('a');a.href=url;a.download=rec.name;a.click();};
+  const cls=el('button','btn sm','✕ Κλείσιμο');cls.onclick=()=>{ov.remove();URL.revokeObjectURL(url);};
+  grp.appendChild(dl);grp.appendChild(cls);bar.appendChild(grp);box.appendChild(bar);
+  const body=el('div');body.style.cssText='flex:1;background:#525659;overflow:auto';
+  if(isImg)body.innerHTML=`<div style="min-height:100%;display:flex;align-items:center;justify-content:center;padding:10px"><img src="${url}" style="max-width:100%;height:auto"></div>`;
+  else body.innerHTML=`<iframe src="${url}" style="width:100%;height:100%;border:0" title="${esc(rec.name)}"></iframe>`;
+  box.appendChild(body);ov.appendChild(box);document.body.appendChild(ov);
+}
+
+function viewLibrary(c){
+  c.appendChild(el('div','notice','📖 Δωρεάν & νόμιμες πηγές λογοτεχνίας και βιβλίων (public domain). Οι σύνδεσμοι ανοίγουν σε νέα καρτέλα.'));
+  // 📥 Offline: τα δικά μου αρχεία (IndexedDB)
+  const off=el('div','card');
+  off.innerHTML=`<div class="tag">Offline</div><h3>📥 Τα δικά μου βιβλία (offline)</h3>
+    <p class="hint">Ανέβασε δικά σου <b>PDF</b> (ή εικόνες/κείμενα) — αποθηκεύονται <b>τοπικά στη συσκευή σου</b> και ανοίγουν <b>χωρίς internet</b>. Ιδανικό για τα σχολικά PDF που κατεβάζεις από το <a href="https://ebooks.edu.gr" target="_blank" rel="noopener">ebooks.edu.gr</a>.</p>`;
+  const upWrap=el('div','no-print');upWrap.style.margin='6px 0 10px';
+  const inp=el('input');inp.type='file';inp.accept='.pdf,application/pdf,.txt,.epub,image/*';inp.multiple=true;
+  upWrap.appendChild(inp);off.appendChild(upWrap);
+  const oList=el('div');off.appendChild(oList);
+  const renderOff=async()=>{
+    oList.innerHTML='<p class="hint">Φόρτωση…</p>';
+    let recs=[];try{recs=await idbAll();}catch(e){oList.innerHTML='<p class="hint">Η τοπική αποθήκευση δεν είναι διαθέσιμη σε αυτόν τον browser.</p>';return;}
+    recs.sort((a,b)=>b.added-a.added);
+    if(!recs.length){oList.innerHTML='<p class="hint">Δεν έχεις ανεβάσει αρχεία ακόμα.</p>';return;}
+    oList.innerHTML='';
+    recs.forEach(r=>{
+      const d=el('div','book');
+      const ic=/pdf/i.test(r.type)||/\.pdf$/i.test(r.name)?'📕':/^image\//i.test(r.type)?'🖼️':'📄';
+      d.innerHTML=`<div class="cov">${ic}</div><div class="meta"><b>${esc(r.name)}</b><small>${fmtBytes(r.size||0)} · ${new Date(r.added).toLocaleDateString('el-GR')}</small></div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-self:center">
+        <button class="btn sm" data-open="${r.id}">📖 Άνοιγμα</button>
+        <button class="btn ghost sm" data-delf="${r.id}">🗑️</button></div>`;
+      oList.appendChild(d);
+    });
+    $$('[data-open]',oList).forEach(b=>b.onclick=async()=>{const recs2=await idbAll();const r=recs2.find(x=>x.id===b.dataset.open);if(r)openLocalFile(r);});
+    $$('[data-delf]',oList).forEach(b=>b.onclick=async()=>{if(confirm('Διαγραφή αρχείου;')){await idbDel(b.dataset.delf);renderOff();}});
+  };
+  inp.onchange=async()=>{
+    const files=[...inp.files]; if(!files.length)return;
+    for(const f of files){
+      if(f.size>200*1048576){alert(`Το «${f.name}» είναι πολύ μεγάλο (>200MB).`);continue;}
+      try{await idbPut({id:'f_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),name:f.name,type:f.type,size:f.size,added:Date.now(),blob:f});}
+      catch(e){alert('Δεν αποθηκεύτηκε το '+f.name+' ('+e.message+')');}
+    }
+    inp.value='';renderOff();
+  };
+  c.appendChild(off);renderOff();
+  // sources
+  const g=el('div','grid g2');
+  LIBSOURCES.forEach(s=>{
+    const card=el('div','card');
+    card.innerHTML=`<div style="font-size:1.6rem">${s.ic}</div><h3 style="margin-top:8px">${s.t}</h3>
+      <p style="color:var(--muted);font-size:.86rem">${s.d}</p>
+      <a class="btn sm" style="text-decoration:none;margin-top:6px;display:inline-block" href="${s.u}" target="_blank" rel="noopener">Άνοιγμα →</a>`;
+    g.appendChild(card);
+  });
+  c.appendChild(g);
+  // suggested reading
+  const sug=el('div','card');
+  sug.innerHTML=`<div class="tag">Προτεινόμενα αναγνώσματα</div><h3>Κλασική λογοτεχνία</h3>`;
+  LITSUGGEST.forEach(b=>{
+    const d=el('div','book');
+    d.innerHTML=`<div class="cov">📕</div><div class="meta"><b>${b.title}</b><small>${b.author} · ${b.lvl}</small></div>
+      <a class="btn ghost sm" style="align-self:center;text-decoration:none" href="${b.u}" target="_blank" rel="noopener">Άνοιγμα</a>`;
+    sug.appendChild(d);
+  });
+  c.appendChild(sug);
+  // my books
+  const my=el('div','card');
+  my.innerHTML=`<div class="tag">Η βιβλιοθήκη μου</div><h3>📚 Τα βιβλία μου</h3>`;
+  const list=el('div');my.appendChild(list);
+  const renderMy=()=>{
+    list.innerHTML='';
+    if(!S.customBooks.length){list.innerHTML='<p class="hint">Δεν έχεις προσθέσει βιβλία ακόμα.</p>';return;}
+    S.customBooks.forEach((b,i)=>{
+      const d=el('div','book');
+      d.innerHTML=`<div class="cov">📗</div><div class="meta"><b>${esc(b.title)}</b><small>${esc(b.author||'')}</small>${b.note?`<div class="hint">${esc(b.note)}</div>`:''}</div>
+       <div style="display:flex;flex-direction:column;gap:6px;align-self:center">
+       ${b.link?`<a class="btn ghost sm" style="text-decoration:none" href="${esc(b.link)}" target="_blank" rel="noopener">Άνοιγμα</a>`:''}
+       <button class="btn ghost sm" data-del="${i}">🗑️</button></div>`;
+      list.appendChild(d);
+    });
+    $$('[data-del]',list).forEach(b=>b.onclick=()=>{S.customBooks.splice(+b.dataset.del,1);save();renderMy();});
+  };
+  renderMy();
+  const form=el('div','no-print');form.style.marginTop='12px';
+  form.innerHTML=`<div class="divider"></div><h4>➕ Προσθήκη βιβλίου</h4>
+    <div class="row"><div><label>Τίτλος</label><input id="nb-t" placeholder="Τίτλος βιβλίου"></div>
+    <div><label>Συγγραφέας</label><input id="nb-a" placeholder="Συγγραφέας"></div></div>
+    <label>Σύνδεσμος (προαιρετικά)</label><input id="nb-l" placeholder="https://...">
+    <label>Σημείωση (προαιρετικά)</label><input id="nb-n" placeholder="π.χ. για την έκθεση">`;
+  const add=el('button','btn','Προσθήκη');add.style.marginTop='10px';
+  add.onclick=()=>{const t=$('#nb-t').value.trim();if(!t)return alert('Γράψε τίτλο.');S.customBooks.push({title:t,author:$('#nb-a').value.trim(),link:$('#nb-l').value.trim(),note:$('#nb-n').value.trim()});save();renderMy();['#nb-t','#nb-a','#nb-l','#nb-n'].forEach(s=>$(s).value='');};
+  form.appendChild(add);my.appendChild(form);
+  c.appendChild(my);
+}
+
+/* =========================================================================
+   VIEW: QUIZ / TESTS
+   ========================================================================= */
+let quizState=null;
+function viewQuiz(c){
+  const tabs=el('div','row no-print');tabs.style.marginBottom='8px';
+  const t1=el('button','btn','📝 Κουίζ');
+  const t2=el('button','btn ghost','🃏 Κάρτες μνήμης');
+  const wc=Object.values(S.wrong||{}).reduce((a,x)=>a+x.length,0);
+  const t3=el('button','btn ghost','📌 Τα λάθη μου'+(wc?` (${wc})`:''));
+  [t1,t2,t3].forEach(b=>{b.style.flex='1 1 auto';tabs.appendChild(b);});
+  c.appendChild(tabs);
+  const host=el('div');c.appendChild(host);
+  const setA=b=>[t1,t2,t3].forEach(x=>x.className=x===b?'btn':'btn ghost');
+  t1.onclick=()=>{setA(t1);renderQuizSetup(host);};
+  t2.onclick=()=>{setA(t2);renderFlashcards(host);};
+  t3.onclick=()=>{setA(t3);renderWrong(host);};
+  if(window.__quizTab==='cards'){setA(t2);renderFlashcards(host);}
+  else if(window.__quizTab==='wrong'){setA(t3);renderWrong(host);}
+  else renderQuizSetup(host);
+  window.__quizTab=null;
+}
+function renderQuizSetup(host){
+  host.innerHTML='';
+  const setup=el('div','card no-print');
+  setup.innerHTML=`<div class="tag">Διαγώνισμα</div><h3>📝 Φτιάξε ένα κουίζ</h3>`;
+  const subs=Object.keys(QBANK);
+  const s1=el('div');s1.innerHTML=`<label>Μάθημα</label><select id="qz-subj">${subs.map(s=>`<option>${s}</option>`).join('')}</select>`;
+  setup.appendChild(s1);
+  const s2=el('div');s2.innerHTML=`<label>Πλήθος ερωτήσεων</label><select id="qz-n"><option>5</option><option>10</option><option>15</option><option>20</option><option value="999">Όλες</option></select>`;
+  setup.appendChild(s2);
+  const start=el('button','btn','▶️ Ξεκίνα');start.style.marginTop='12px';setup.appendChild(start);
+  host.appendChild(setup);
+  const qhost=el('div');host.appendChild(qhost);
+  start.onclick=()=>startQuiz($('#qz-subj').value,+$('#qz-n').value,qhost);
+  if(S.quizScores.length){
+    const h=el('div','card');
+    h.innerHTML=`<div class="tag">Ιστορικό</div><h3>Οι επιδόσεις σου</h3>`;
+    const t=el('table');t.innerHTML='<thead><tr><th>Ημ/νία</th><th>Μάθημα</th><th>Σκορ</th></tr></thead>';
+    const tb=el('tbody');
+    S.quizScores.slice().reverse().slice(0,15).forEach(x=>{const pct=Math.round(x.score/x.total*100);
+      tb.innerHTML+=`<tr><td>${x.date}</td><td>${esc(x.subject)}</td><td><b style="color:var(--red2)">${x.score}/${x.total}</b> (${pct}%)</td></tr>`;});
+    t.appendChild(tb);const sw2=el('div','scrollx');sw2.appendChild(t);h.appendChild(sw2);host.appendChild(h);
+  }
+}
+function startQuiz(subject,n,host){
+  const bank=(QBANK[subject]||[]).slice();
+  // shuffle
+  for(let i=bank.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[bank[i],bank[j]]=[bank[j],bank[i]];}
+  const qs=bank.slice(0,Math.min(n,bank.length));
+  quizState={subject,qs,answers:new Array(qs.length).fill(null),submitted:false};
+  renderQuiz(host);
+}
+function renderQuiz(host){
+  host.innerHTML='';
+  const {subject,qs,answers,submitted}=quizState;
+  const head=el('div','card');
+  head.innerHTML=`<div class="tag">${esc(subject)}</div><h3 id="print-area-title">Διαγώνισμα — ${esc(subject)}</h3><p class="hint">${qs.length} ερωτήσεις</p>`;
+  host.appendChild(head);
+  const area=el('div','',null);area.id='print-area';host.appendChild(area);
+  qs.forEach((q,i)=>{
+    const box=el('div','q-box');
+    box.innerHTML=`<b>${i+1}. ${esc(q.q)}</b>`;
+    if(q.type==='mc'){
+      q.opts.forEach((o,oi)=>{
+        const opt=el('div','q-opt'+(answers[i]===oi?' sel':''));
+        opt.textContent=String.fromCharCode(945+oi)+'. '+o; // α β γ δ (greek)
+        if(submitted){
+          if(oi===q.a)opt.classList.add('correct');
+          else if(answers[i]===oi)opt.classList.add('wrong');
+        }else opt.onclick=()=>{answers[i]=oi;renderQuiz(host);};
+        box.appendChild(opt);
+      });
+    }else{
+      const ta=el('textarea');ta.placeholder='Η απάντησή σου...';ta.value=answers[i]||'';
+      ta.disabled=submitted;ta.oninput=()=>{answers[i]=ta.value;};
+      box.appendChild(ta);
+      if(submitted)box.innerHTML+=`<p class="hint" style="margin-top:8px">💡 Ενδεικτική απάντηση: <b>${esc(q.a)}</b></p>`;
+    }
+    area.appendChild(box);
+  });
+  const bar=el('div','row no-print');
+  if(!submitted){
+    const sub=el('button','btn','✓ Υποβολή & Βαθμολόγηση');
+    sub.onclick=()=>{
+      quizState.submitted=true;
+      const mc=qs.filter(q=>q.type==='mc');
+      const score=mc.reduce((a,q,i)=>{const idx=qs.indexOf(q);return a+(answers[idx]===q.a?1:0);},0);
+      quizState.autoScore=score;quizState.autoTotal=mc.length;
+      if(mc.length)S.quizScores.push({subject,score,total:mc.length,date:new Date().toLocaleDateString('el-GR')});
+      // καταγραφή/αφαίρεση λαθών ανά μάθημα
+      if(!S.wrong)S.wrong={};
+      qs.forEach((q,i)=>{
+        if(q.type!=='mc')return;
+        if(answers[i]!==q.a){ S.wrong[subject]=S.wrong[subject]||[]; if(!S.wrong[subject].some(w=>w.q===q.q)) S.wrong[subject].push(q); }
+        else if(S.wrong[subject]){ S.wrong[subject]=S.wrong[subject].filter(w=>w.q!==q.q); }
+      });
+      if(S.wrong[subject]&&!S.wrong[subject].length) delete S.wrong[subject];
+      save();touchActivity();
+      renderQuiz(host);
+    };
+    bar.appendChild(sub);
+  }else{
+    const res=el('div','card');
+    if(quizState.autoTotal){
+      const pct=Math.round(quizState.autoScore/quizState.autoTotal*100);
+      res.innerHTML=`<h3 style="color:var(--red2)">Αποτέλεσμα: ${quizState.autoScore}/${quizState.autoTotal} (${pct}%)</h3>
+      <div class="progress"><i style="width:${pct}%"></i></div>
+      <p class="hint">Οι ερωτήσεις ανοιχτού τύπου βαθμολογούνται από εσένα με βάση την ενδεικτική απάντηση.</p>`;
+    }else res.innerHTML=`<h3>Ολοκληρώθηκε ✓</h3><p class="hint">Έλεγξε τις ενδεικτικές απαντήσεις.</p>`;
+    host.insertBefore(res,area.nextSibling||null);
+    const again=el('button','btn ghost','🔄 Νέο κουίζ');again.onclick=()=>go('quiz');
+    const prt=el('button','btn ghost','🖨️ Εκτύπωση');prt.onclick=()=>window.print();
+    bar.appendChild(again);bar.appendChild(prt);
+  }
+  const prt2=el('button','btn ghost','🖨️ Εκτύπωση φύλλου');prt2.onclick=()=>window.print();
+  if(!submitted)bar.appendChild(prt2);
+  host.appendChild(bar);
+}
+
+/* ---------- FLASHCARDS ---------- */
+function deckFor(subject){
+  const base=(FLASHCARDS[subject]||[]).slice();
+  const custom=(S.customCards||[]).filter(c=>c.subject===subject).map(c=>({front:c.front,back:c.back,custom:true}));
+  return base.concat(custom);
+}
+/* ---- Spaced repetition (SM-2 lite) ---- */
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; // τοπική ημερομηνία (όχι UTC)
+const todayISO=()=>ymd(new Date());
+const srKey=(subject,front)=>subject+'|'+front;
+function srDue(subject,front){const st=S.cardSR&&S.cardSR[srKey(subject,front)];if(!st)return true;return st.due<=todayISO();}
+function srSchedule(subject,front,rating){
+  if(!S.cardSR)S.cardSR={};
+  const k=srKey(subject,front); const st=S.cardSR[k]||{reps:0,interval:0,ease:2.5};
+  if(rating==='again'){st.reps=0;st.interval=0;st.ease=Math.max(1.3,st.ease-0.2);}
+  else if(rating==='hard'){st.reps++;st.interval=Math.max(1,Math.round((st.interval||1)*1.2));st.ease=Math.max(1.3,st.ease-0.05);}
+  else{st.reps++;st.interval=st.reps===1?1:st.reps===2?3:Math.round((st.interval||3)*st.ease);st.ease=Math.min(2.8,st.ease+0.1);}
+  const d=new Date();d.setDate(d.getDate()+(rating==='again'?0:st.interval));st.due=ymd(d);
+  S.cardSR[k]=st;
+  if(!S.stats)S.stats={lastActive:'',streak:0,cardsReviewed:0};S.stats.cardsReviewed=(S.stats.cardsReviewed||0)+1;
+  save();touchActivity();
+}
+function allCards(){
+  const subs=[...new Set([...Object.keys(FLASHCARDS),...(S.customCards||[]).map(c=>c.subject)])];
+  const out=[];subs.forEach(s=>deckFor(s).forEach(c=>out.push({subject:s,front:c.front,back:c.back})));return out;
+}
+function dueCount(){return allCards().filter(c=>srDue(c.subject,c.front)).length;}
+/* ---- Στατιστικά, σερί & επιτεύγματα ---- */
+function touchActivity(){
+  if(!S.stats)S.stats={lastActive:'',streak:0,cardsReviewed:0};
+  const t=todayISO();
+  if(S.stats.lastActive!==t){
+    const y=new Date();y.setDate(y.getDate()-1);
+    S.stats.streak=(S.stats.lastActive===ymd(y))?((S.stats.streak||0)+1):1;
+    S.stats.lastActive=t;save();
+  }
+}
+function computeStats(){
+  const qs=S.quizScores||[];const tot=qs.reduce((a,x)=>a+x.total,0),got=qs.reduce((a,x)=>a+x.score,0);
+  return {sessions:Object.values(S.done||{}).filter(Boolean).length,quizzes:qs.length,avgQuiz:tot?Math.round(got/tot*100):0,
+    bestQuiz:qs.reduce((m,x)=>Math.max(m,Math.round(x.score/x.total*100)),0),cardsReviewed:(S.stats&&S.stats.cardsReviewed)||0,
+    pomodoros:S.pomodoros||0,favorites:(S.favorites||[]).length,notesCount:Object.values(S.notes||{}).filter(v=>v&&v.trim()).length,streak:(S.stats&&S.stats.streak)||0};
+}
+const ACHIEVEMENTS=[
+ {i:'🎯',n:'Ξεκίνημα',d:'Έλυσες το πρώτο σου κουίζ',t:s=>s.quizzes>=1},
+ {i:'💯',n:'Άριστα!',d:'Πήρες 100% σε κουίζ',t:s=>s.bestQuiz>=100},
+ {i:'🔥',n:'Σερί 3 ημερών',d:'Μελέτησες 3 μέρες στη σειρά',t:s=>s.streak>=3},
+ {i:'🚀',n:'Σερί 7 ημερών',d:'Μια εβδομάδα συνεχόμενης μελέτης',t:s=>s.streak>=7},
+ {i:'📚',n:'Επιμελής',d:'10 ολοκληρωμένες μελέτες',t:s=>s.sessions>=10},
+ {i:'🃏',n:'Μνήμη ελέφαντα',d:'50 επαναλήψεις καρτών',t:s=>s.cardsReviewed>=50},
+ {i:'🍅',n:'Απόλυτη εστίαση',d:'10 συνεδρίες Pomodoro',t:s=>s.pomodoros>=10},
+ {i:'📝',n:'Σημειωματάριο',d:'Σημειώσεις σε 3 μαθήματα',t:s=>s.notesCount>=3},
+ {i:'⭐',n:'Στοχοθεσία',d:'5 αγαπημένες σχολές',t:s=>s.favorites>=5},
+ {i:'🧠',n:'Καλή πορεία',d:'Μέση επιτυχία ≥70% (≥3 κουίζ)',t:s=>s.quizzes>=3&&s.avgQuiz>=70}
+];
+function renderFlashcards(host){
+  host.innerHTML='';
+  const subs=[...new Set([...Object.keys(FLASHCARDS),...(S.customCards||[]).map(c=>c.subject)])];
+  const ctl=el('div','card no-print');
+  ctl.innerHTML=`<div class="tag">Κάρτες μνήμης · Spaced repetition</div><h3>🃏 Έξυπνη επανάληψη</h3>
+    <p class="hint">Δες την απάντηση και βαθμολόγησε πόσο καλά την ήξερες. Το σύστημα προγραμματίζει <b>πότε θα ξαναδείς κάθε κάρτα</b> (σήμερα → σε λίγες μέρες → αργότερα), ώστε να θυμάσαι περισσότερα με λιγότερο κόπο.</p>`;
+  const row=el('div','row');
+  row.innerHTML=`<div><label>Τι θα μελετήσω</label><select id="fc-subj"><option value="__ALL__">🔁 Όλα — για επανάληψη σήμερα</option>${subs.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')}</select></div>
+    <div style="flex:0 0 auto;display:flex;align-items:flex-end"><label style="display:flex;align-items:center;gap:6px;margin:0"><input type="checkbox" id="fc-due" checked style="width:auto"> Μόνο ό,τι είναι για σήμερα</label></div>`;
+  ctl.appendChild(row);host.appendChild(ctl);
+  const stage=el('div');host.appendChild(stage);
+  let queue=[],flipped=false;
+  function build(){
+    const sel=$('#fc-subj').value, onlyDue=$('#fc-due').checked;
+    let cards = sel==='__ALL__' ? allCards() : deckFor(sel).map(c=>({subject:sel,front:c.front,back:c.back}));
+    if(sel==='__ALL__'||onlyDue) cards=cards.filter(c=>srDue(c.subject,c.front));
+    queue=cards;flipped=false;draw();
+  }
+  function draw(){
+    stage.innerHTML='';
+    if(!queue.length){stage.innerHTML='<div class="card" style="text-align:center"><h3>🎉 Τελείωσες!</h3><p class="hint">Καμία κάρτα για επανάληψη με αυτά τα κριτήρια. Γύρνα αργότερα, ή ξετσέκαρε «μόνο για σήμερα» για να δεις όλες τις κάρτες.</p></div>';return;}
+    const c=queue[0], st=S.cardSR&&S.cardSR[srKey(c.subject,c.front)];
+    const card=el('div','card');card.style.textAlign='center';
+    card.innerHTML=`<div class="hint">${esc(c.subject)} · απομένουν ${queue.length}${st?` · θυμήθηκες ${st.reps||0}× (επόμενο ${st.interval||0}μ.)`:' · νέα κάρτα'}</div>
+      <div id="fc-face" style="cursor:pointer;min-height:150px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:700;padding:20px;border:1px dashed var(--line);border-radius:12px;margin:12px 0;background:var(--bg2)">${flipped?esc(c.back):esc(c.front)}</div>`;
+    stage.appendChild(card);
+    const bar=el('div','row no-print');bar.style.justifyContent='center';bar.style.marginTop='6px';
+    if(!flipped){
+      const show=el('button','btn','🔄 Δες την απάντηση');show.onclick=()=>{flipped=true;draw();};bar.appendChild(show);
+    }else{
+      const again=el('button','btn ghost','❌ Ξανά');const hard=el('button','btn ghost','🟡 Σχεδόν');const good=el('button','btn','✅ Το ήξερα');
+      again.onclick=()=>rate('again');hard.onclick=()=>rate('hard');good.onclick=()=>rate('good');
+      bar.appendChild(again);bar.appendChild(hard);bar.appendChild(good);
+    }
+    stage.appendChild(bar);
+    $('#fc-face',card).onclick=()=>{flipped=!flipped;draw();};
+  }
+  function rate(r){const c=queue[0];srSchedule(c.subject,c.front,r);if(r==='again')queue.push(queue.shift());else queue.shift();flipped=false;draw();}
+  // add-your-own
+  const add=el('div','card no-print');
+  add.innerHTML=`<div class="tag">Προσθήκη</div><h4>➕ Δική σου κάρτα</h4>
+    <div class="row"><div><label>Μάθημα</label><select id="fc-as">${subs.map(s=>`<option>${esc(s)}</option>`).join('')}</select></div>
+    <div><label>Μπροστά (ερώτηση)</label><input id="fc-f" placeholder="π.χ. 1453"></div>
+    <div><label>Πίσω (απάντηση)</label><input id="fc-b" placeholder="π.χ. Άλωση Κωνσταντινούπολης"></div></div>`;
+  const ab=el('button','btn sm','Προσθήκη κάρτας');ab.style.marginTop='10px';
+  ab.onclick=()=>{const f=$('#fc-f').value.trim(),b=$('#fc-b').value.trim();if(!f||!b)return alert('Συμπλήρωσε και τις δύο όψεις.');S.customCards.push({subject:$('#fc-as').value,front:f,back:b});save();$('#fc-f').value='';$('#fc-b').value='';build();};
+  add.appendChild(ab);host.appendChild(add);
+  $('#fc-subj').onchange=build;$('#fc-due').onchange=build;
+  build();
+}
+/* ---------- ΤΑ ΛΑΘΗ ΜΟΥ ---------- */
+function renderWrong(host){
+  host.innerHTML='';
+  const subs=Object.keys(S.wrong||{}).filter(s=>S.wrong[s]&&S.wrong[s].length);
+  if(!subs.length){host.appendChild(el('div','card','<div class="tag">Λάθη</div><h3>📌 Τα λάθη μου</h3><p class="hint">Δεν έχεις λάθη αποθηκευμένα. Λύσε κουίζ και όσες ερωτήσεις κάνεις λάθος θα μαζεύονται εδώ για εξάσκηση.</p>'));return;}
+  const info=el('div','card no-print');
+  info.innerHTML=`<div class="tag">Λάθη</div><h3>📌 Τα λάθη μου</h3><p class="hint">Ξαναδοκίμασε τις ερωτήσεις που δυσκολεύτηκες. Όταν τις απαντήσεις σωστά, φεύγουν από τη λίστα.</p>`;
+  host.appendChild(info);
+  const qhost=el('div');host.appendChild(qhost);
+  subs.forEach(s=>{
+    const card=el('div','card');
+    card.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h3 style="margin:0">${esc(s)} <small style="color:var(--muted)">(${S.wrong[s].length})</small></h3>
+      <div class="row no-print" style="flex:0 0 auto"></div></div>`;
+    const btnRow=card.querySelector('.row');
+    const go2=el('button','btn sm','▶️ Εξάσκηση');
+    go2.onclick=()=>{const qs=S.wrong[s].slice();for(let i=qs.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[qs[i],qs[j]]=[qs[j],qs[i]];}quizState={subject:s,qs,answers:new Array(qs.length).fill(null),submitted:false};renderQuiz(qhost);qhost.scrollIntoView({behavior:'smooth'});};
+    const clr=el('button','btn ghost sm','🗑️ Καθάρισε');
+    clr.onclick=()=>{delete S.wrong[s];save();renderWrong(host);};
+    btnRow.appendChild(go2);btnRow.appendChild(clr);
+    host.appendChild(card);
+  });
+}
+
+/* =========================================================================
+   VIEW: WHITEBOARD
+   ========================================================================= */
+function viewBoard(c){
+  c.appendChild(el('div','notice','🖊️ Διαδραστικός πίνακας για να λύνεις ασκήσεις. Ζωγράφισε με ποντίκι ή δάχτυλο. Μπορείς να αποθηκεύσεις εικόνα ή να εκτυπώσεις.'));
+  const card=el('div','card');
+  const tools=el('div','tools no-print');
+  card.appendChild(tools);
+  const wrap=el('div');wrap.id='board-wrap';
+  const cv=el('canvas');cv.id='board';wrap.appendChild(cv);
+  card.appendChild(wrap);
+  c.appendChild(card);
+
+  // build tools
+  const colors=['#111111','#e11d2a','#1e63d6','#e8b74a','#8a2be2','#ffffff'];
+  let color=colors[0],size=3,erasing=false;
+  const swWrap=el('div');swWrap.style.display='flex';swWrap.style.gap='6px';
+  colors.forEach((cl,i)=>{const s=el('span','swatch'+(i===0?' on':''));s.style.background=cl;if(cl==='#ffffff')s.style.borderColor='#999';s.onclick=()=>{color=cl;erasing=false;$$('.swatch',swWrap).forEach(x=>x.classList.remove('on'));s.classList.add('on');pen.className='btn ghost sm';};swWrap.appendChild(s);});
+  tools.appendChild(swWrap);
+  const sizeSel=el('select');sizeSel.style.maxWidth='120px';sizeSel.innerHTML='<option value="2">Λεπτό</option><option value="3" selected>Κανονικό</option><option value="6">Χοντρό</option><option value="12">Μαρκαδόρος</option>';sizeSel.onchange=()=>size=+sizeSel.value;tools.appendChild(sizeSel);
+  const pen=el('button','btn sm','✏️ Στυλό');pen.onclick=()=>{erasing=false;pen.className='btn sm';er.className='btn ghost sm';};tools.appendChild(pen);
+  const er=el('button','btn ghost sm','🧽 Σβήστρα');er.onclick=()=>{erasing=true;er.className='btn sm';pen.className='btn ghost sm';};tools.appendChild(er);
+  const clr=el('button','btn ghost sm','🗑️ Καθαρισμός');tools.appendChild(clr);
+  const grid=el('button','btn ghost sm','🔳 Κάνναβος');tools.appendChild(grid);
+  const dl=el('button','btn ghost sm','💾 Αποθήκευση PNG');tools.appendChild(dl);
+  const prt=el('button','btn ghost sm','🖨️ Εκτύπωση');prt.onclick=()=>window.print();tools.appendChild(prt);
+
+  const ctx=cv.getContext('2d');
+  let showGrid=false;
+  function resize(){
+    const w=wrap.clientWidth, h=Math.round(w*0.6);
+    const img=ctx.getImageData?null:null;
+    const data=cv.toDataURL();
+    cv.width=w;cv.height=h;
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);
+    if(showGrid)drawGrid();
+    const im=new Image();im.onload=()=>ctx.drawImage(im,0,0);im.src=data;
+  }
+  function drawGrid(){
+    ctx.save();ctx.strokeStyle='#e3e6ee';ctx.lineWidth=1;
+    for(let x=0;x<cv.width;x+=25){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,cv.height);ctx.stroke();}
+    for(let y=0;y<cv.height;y+=25){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(cv.width,y);ctx.stroke();}
+    ctx.restore();
+  }
+  // init size
+  cv.width=wrap.clientWidth||800;cv.height=Math.round((wrap.clientWidth||800)*0.6);
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+  window.addEventListener('resize',()=>{clearTimeout(window._brz);window._brz=setTimeout(resize,200);});
+
+  // Pointer Events: υποστηρίζει ποντίκι, δάχτυλο ΚΑΙ ενεργή πένα με ευαισθησία πίεσης
+  let drawing=false,last=null;
+  const pos=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*(cv.width/r.width),y:(e.clientY-r.top)*(cv.height/r.height)};};
+  // πλάτος γραμμής ανάλογα με την πίεση της πένας (0..1)· ποντίκι/δάχτυλο -> σταθερό
+  const lineW=e=>{
+    if(erasing) return 18;
+    const pen=e.pointerType==='pen';
+    const pr=(pen && e.pressure>0)?e.pressure:0.5;   // 0.5 = ουδέτερο όταν δεν υπάρχει πίεση
+    return pen ? Math.max(0.5, size*(0.35+pr*1.3)) : size;
+  };
+  function down(e){drawing=true;last=pos(e);try{cv.setPointerCapture(e.pointerId);}catch(_){ } // ζωγράφισε μια τελεία
+    ctx.fillStyle=erasing?'#fff':color;ctx.beginPath();ctx.arc(last.x,last.y,lineW(e)/2,0,7);ctx.fill();e.preventDefault();}
+  function move(e){if(!drawing)return;
+    // coalesced events για πιο ομαλή γραμμή με πένα/γρήγορη κίνηση
+    const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+    ctx.strokeStyle=erasing?'#fff':color;ctx.lineCap='round';ctx.lineJoin='round';
+    for(const ev of evs){const p=pos(ev);ctx.lineWidth=lineW(ev);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;}
+    e.preventDefault();}
+  function up(){drawing=false;}
+  if(window.PointerEvent){
+    cv.addEventListener('pointerdown',down);
+    cv.addEventListener('pointermove',move);
+    cv.addEventListener('pointerup',up);
+    cv.addEventListener('pointercancel',up);
+    cv.addEventListener('pointerleave',up);
+  }else{ // fallback (πολύ παλιοί browsers)
+    const mp=e=>({clientX:(e.touches?e.touches[0]:e).clientX,clientY:(e.touches?e.touches[0]:e).clientY,pointerType:'mouse',pressure:0,preventDefault:()=>e.preventDefault&&e.preventDefault()});
+    cv.addEventListener('mousedown',e=>down(mp(e)));cv.addEventListener('mousemove',e=>move(mp(e)));window.addEventListener('mouseup',up);
+    cv.addEventListener('touchstart',e=>down(mp(e)),{passive:false});cv.addEventListener('touchmove',e=>move(mp(e)),{passive:false});cv.addEventListener('touchend',up);
+  }
+
+  clr.onclick=()=>{ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);if(showGrid)drawGrid();};
+  grid.onclick=()=>{showGrid=!showGrid;grid.className=showGrid?'btn sm':'btn ghost sm';if(showGrid)drawGrid();else{const d=cv.toDataURL();ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);}};
+  dl.onclick=()=>{const a=el('a');a.download='pinakas.png';a.href=cv.toDataURL('image/png');a.click();};
+}
+
+/* =========================================================================
+   VIEW: NOTES (σημειώσεις ανά μάθημα)
+   ========================================================================= */
+function viewNotes(c){
+  c.appendChild(el('div','notice no-print','📝 Κράτα σημειώσεις ανά μάθημα — αποθηκεύονται αυτόματα τοπικά. Μπορείς να τις εκτυπώσεις.'));
+  const subs=allSubjects();
+  const card=el('div','card');
+  const sel=el('div','no-print');
+  sel.innerHTML=`<label>Μάθημα</label><select id="nt-subj">${subs.map(s=>`<option>${esc(s)}</option>`).join('')}</select>`;
+  card.appendChild(sel);
+  const title=el('h3');title.id='nt-title';title.style.marginTop='10px';
+  const ta=el('textarea');ta.id='nt-area';ta.style.minHeight='320px';ta.placeholder='Γράψε τις σημειώσεις σου εδώ...';
+  card.appendChild(title);card.appendChild(ta);
+  const bar=el('div','row no-print');bar.style.marginTop='10px';
+  const pr=el('button','btn ghost','🖨️ Εκτύπωση');pr.onclick=()=>window.print();
+  const st=el('span','hint');st.id='nt-status';st.style.alignSelf='center';
+  bar.appendChild(pr);bar.appendChild(st);card.appendChild(bar);
+  c.appendChild(card);
+  const load=()=>{const s=$('#nt-subj').value;$('#nt-title').textContent='📝 '+s;ta.value=(S.notes&&S.notes[s])||'';$('#nt-status').textContent='';};
+  $('#nt-subj').onchange=load;
+  ta.oninput=()=>{const s=$('#nt-subj').value;if(!S.notes)S.notes={};S.notes[s]=ta.value;save();$('#nt-status').textContent='✓ αποθηκεύτηκε';};
+  const withNotes=subs.find(s=>S.notes&&S.notes[s]&&S.notes[s].trim());
+  if(withNotes)$('#nt-subj').value=withNotes;
+  load();
+}
+
+/* =========================================================================
+   VIEW: POMODORO (χρονόμετρο μελέτης)
+   ========================================================================= */
+function viewPomodoro(c){
+  c.appendChild(el('div','notice no-print','🍅 Τεχνική Pomodoro: μελέτη με εστίαση σε συνεδρίες + μικρά διαλείμματα. Βοηθά τη συγκέντρωση. (Το χρονόμετρο σταματά αν αλλάξεις καρτέλα.)'));
+  if(window.__pomoRemain==null){window.__pomoWork=25;window.__pomoBreak=5;window.__pomoMode='work';window.__pomoRemain=25*60;}
+  const card=el('div','card');card.style.textAlign='center';
+  card.innerHTML=`<div class="tag">${window.__pomoMode==='work'?'🍅 Μελέτη':'☕ Διάλειμμα'}</div>`;
+  const disp=el('div');disp.id='pomo-disp';disp.style.cssText='font-size:4rem;font-weight:800;color:var(--red2);letter-spacing:2px;margin:10px 0';
+  card.appendChild(disp);
+  const bar=el('div','row no-print');bar.style.justifyContent='center';
+  const startB=el('button','btn','▶️ Έναρξη');const pauseB=el('button','btn ghost','⏸️ Παύση');const resetB=el('button','btn ghost','↺ Μηδενισμός');
+  bar.appendChild(startB);bar.appendChild(pauseB);bar.appendChild(resetB);card.appendChild(bar);
+  const presets=el('div','row no-print');presets.style.justifyContent='center';presets.style.marginTop='8px';
+  [[25,5],[50,10],[15,3]].forEach(([w,b])=>{const pb=el('button','btn ghost sm',`${w}′ / ${b}′`);pb.onclick=()=>{if(window.__pomoInt){clearInterval(window.__pomoInt);window.__pomoInt=null;}window.__pomoRunning=false;window.__pomoWork=w;window.__pomoBreak=b;window.__pomoMode='work';window.__pomoRemain=w*60;render();updInfo();};presets.appendChild(pb);});
+  card.appendChild(presets);
+  const info=el('div','hint');info.id='pomo-info';info.style.marginTop='10px';
+  card.appendChild(info);
+  c.appendChild(card);
+  const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  const updInfo=()=>{info.innerHTML=`Ολοκληρωμένες συνεδρίες μελέτης: <b>${S.pomodoros||0}</b> · Ρύθμιση: ${window.__pomoWork}′ μελέτη / ${window.__pomoBreak}′ διάλειμμα`;};
+  function render(){disp.textContent=fmt(window.__pomoRemain);const t=card.querySelector('.tag');if(t)t.textContent=window.__pomoMode==='work'?'🍅 Μελέτη':'☕ Διάλειμμα';}
+  function beep(){try{const ac=new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=880;g.gain.value=0.12;o.start();setTimeout(()=>{o.stop();ac.close();},400);}catch(e){}}
+  function tick(){
+    window.__pomoRemain--;
+    if(window.__pomoRemain<=0){
+      beep();
+      if(window.__pomoInt){clearInterval(window.__pomoInt);window.__pomoInt=null;}window.__pomoRunning=false;
+      if(window.__pomoMode==='work'){S.pomodoros=(S.pomodoros||0)+1;save();touchActivity();window.__pomoMode='break';window.__pomoRemain=window.__pomoBreak*60;}
+      else{window.__pomoMode='work';window.__pomoRemain=window.__pomoWork*60;}
+      updInfo();
+    }
+    render();
+  }
+  startB.onclick=()=>{if(window.__pomoRunning)return;window.__pomoRunning=true;window.__pomoInt=setInterval(tick,1000);};
+  pauseB.onclick=()=>{if(window.__pomoInt){clearInterval(window.__pomoInt);window.__pomoInt=null;}window.__pomoRunning=false;};
+  resetB.onclick=()=>{if(window.__pomoInt){clearInterval(window.__pomoInt);window.__pomoInt=null;}window.__pomoRunning=false;window.__pomoMode='work';window.__pomoRemain=window.__pomoWork*60;render();};
+  render();updInfo();
+}
+
+/* =========================================================================
+   VIEW: SETTINGS / PROFILE
+   ========================================================================= */
+function viewSettings(c){
+  const card=el('div','card');
+  card.innerHTML=`<div class="tag">Προφίλ</div><h3>👤 Τα στοιχεία σου</h3>`;
+  const b=el('button','btn','✏️ Επεξεργασία μέσω ερωτηματολογίου');b.onclick=openOnboard;card.appendChild(b);
+  if(S.profile){
+    const p=S.profile;
+    const t=el('table');t.style.marginTop='14px';
+    const rows=[['Όνομα',p.name||'—'],['Τύπος',p.typeLabel||'—'],['Τάξη/Επίπεδο',p.gradeLabel||'—'],['Στόχος',p.goalLabel||'—'],
+      ['Ώρες/ημέρα',(p.hoursDay||'—')+''],['Ημέρες/εβδ.',(p.daysWeek||'—')+''],['Ημ/νία στόχος',p.targetDate||'—'],
+      ['Δυνατά',(p.strong||[]).join(', ')||'—'],['Αδύναμα',(p.weak||[]).join(', ')||'—']];
+    t.innerHTML='<tbody>'+rows.map(r=>`<tr><td style="width:160px;color:var(--muted)">${r[0]}</td><td><b>${esc(r[1])}</b></td></tr>`).join('')+'</tbody>';
+    const sw3=el('div','scrollx');sw3.appendChild(t);card.appendChild(sw3);
+  }
+  c.appendChild(card);
+
+  // Εμφάνιση: θέμα & μέγεθος γραμμάτων
+  const ap=el('div','card no-print');
+  ap.innerHTML=`<div class="tag">Εμφάνιση</div><h3>🎨 Θέμα & μέγεθος γραμμάτων</h3>`;
+  const arow=el('div','row');arow.style.marginTop='10px';
+  const themeBox=el('div');
+  themeBox.innerHTML=`<label>Θέμα</label>`;
+  const tg=el('div','row');
+  const tD=el('button','btn'+(S.prefs.theme!=='light'?'':' ghost'),'🌙 Σκούρο');
+  const tL=el('button','btn'+(S.prefs.theme==='light'?'':' ghost'),'☀️ Φωτεινό');
+  tD.onclick=()=>{S.prefs.theme='dark';save();applyPrefs();go('settings');};
+  tL.onclick=()=>{S.prefs.theme='light';save();applyPrefs();go('settings');};
+  tg.appendChild(tD);tg.appendChild(tL);themeBox.appendChild(tg);
+  const fontBox=el('div');
+  fontBox.innerHTML=`<label>Μέγεθος γραμμάτων: <b>${Math.round((S.prefs.font||1)*100)}%</b></label>`;
+  const fg=el('div','row');
+  const fMinus=el('button','btn ghost','Α−');const fReset=el('button','btn ghost','Α');const fPlus=el('button','btn ghost','Α+');
+  const setFont=v=>{S.prefs.font=Math.min(1.5,Math.max(0.85,+v.toFixed(2)));save();applyPrefs();go('settings');};
+  fMinus.onclick=()=>setFont((S.prefs.font||1)-0.1);fReset.onclick=()=>setFont(1);fPlus.onclick=()=>setFont((S.prefs.font||1)+0.1);
+  fg.appendChild(fMinus);fg.appendChild(fReset);fg.appendChild(fPlus);fontBox.appendChild(fg);
+  arow.appendChild(themeBox);arow.appendChild(fontBox);ap.appendChild(arow);
+  c.appendChild(ap);
+
+  const data=el('div','card');
+  data.innerHTML=`<div class="tag">Δεδομένα</div><h3>💾 Αντίγραφα & καθαρισμός</h3><p class="hint">Όλα αποθηκεύονται τοπικά στη συσκευή σου (localStorage).</p>`;
+  const row=el('div','row');row.style.marginTop='10px';
+  const exp=el('button','btn ghost','⬇️ Εξαγωγή (JSON)');exp.onclick=()=>{const a=el('a');a.download='sxoleio360-backup.json';a.href=URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}));a.click();};
+  const imp=el('button','btn ghost','⬆️ Εισαγωγή');const fi=el('input');fi.type='file';fi.accept='.json';fi.style.display='none';
+  imp.onclick=()=>fi.click();fi.onchange=()=>{const f=fi.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{S=Object.assign(JSON.parse(JSON.stringify(DEFAULT)),JSON.parse(r.result));save();refreshWho();go('settings');alert('Έγινε εισαγωγή!');}catch(e){alert('Μη έγκυρο αρχείο.');}};r.readAsText(f);};
+  const del=el('button','btn ghost','🗑️ Διαγραφή όλων');del.onclick=()=>{if(confirm('Σίγουρα; Θα διαγραφούν όλα τα δεδομένα σου.')){localStorage.removeItem(LS);S=load();refreshWho();openOnboard();}};
+  row.appendChild(exp);row.appendChild(imp);row.appendChild(del);data.appendChild(row);data.appendChild(fi);
+  c.appendChild(data);
+
+  // PWA install
+  const pwa=el('div','card');
+  const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+  pwa.innerHTML=`<div class="tag">Εφαρμογή</div><h3>📲 Εγκατάσταση στο κινητό/υπολογιστή</h3>
+    <p class="hint">Εγκατέστησέ το σαν κανονική εφαρμογή (εικονίδιο στην αρχική οθόνη, άνοιγμα χωρίς μπάρα browser, λειτουργία offline).</p>`;
+  if(standalone){
+    pwa.innerHTML+=`<p style="color:var(--gold)">✓ Τρέχει ήδη ως εγκατεστημένη εφαρμογή.</p>`;
+  }else{
+    const ib=el('button','btn','📲 Εγκατάσταση εφαρμογής');ib.id='install-btn';ib.style.display=deferredPrompt?'':'none';ib.onclick=doInstall;pwa.appendChild(ib);
+    const help=el('div','hint');help.style.marginTop='10px';
+    help.innerHTML=`<b>Οδηγίες:</b><br>
+     • <b>Android/Chrome:</b> άνοιξε το μέσω <b>http(s) ή localhost</b> → μενού ⋮ → «Εγκατάσταση εφαρμογής» / «Προσθήκη στην αρχική οθόνη».<br>
+     • <b>iPhone/Safari:</b> κουμπί Κοινή χρήση <b>⬆️</b> → «Προσθήκη στην αρχική οθόνη».<br>
+     • Το άνοιγμα με <b>διπλό κλικ (file://)</b> λειτουργεί κανονικά, αλλά η εγκατάσταση χρειάζεται σερβίρισμα. Στον υπολογιστή τρέξε μέσα στον φάκελο:<br>
+     <code style="background:var(--bg2);padding:2px 6px;border-radius:5px;display:inline-block;margin-top:4px">npx serve</code> ή <code style="background:var(--bg2);padding:2px 6px;border-radius:5px">python -m http.server</code> και άνοιξε το <code>http://localhost:...</code>`;
+    pwa.appendChild(help);
+  }
+  c.appendChild(pwa);
+
+  const about=el('div','card');
+  about.innerHTML=`<div class="tag">Σχετικά</div><h3>ΣΧΟΛΕΙΟ 360°</h3>
+   <p class="hint">Offline εφαρμογή μελέτης & προετοιμασίας για Γυμνάσιο, Λύκειο, Πανελλήνιες και Κατατακτήριες. Τα σχολικά βιβλία προέρχονται από το επίσημο <a href="https://ebooks.edu.gr" target="_blank" rel="noopener">ebooks.edu.gr</a> του Υπουργείου Παιδείας.</p>
+   <p style="margin-top:10px;font-weight:700;color:var(--txt)">© by Chronis Makris</p>`;
+  c.appendChild(about);
+}
+
+/* =========================================================================
+   ONBOARDING FLOW
+   ========================================================================= */
+let obStep=0, obData={};
+function openOnboard(){
+  obStep=0; obData=S.profile?JSON.parse(JSON.stringify(S.profile)):{name:'',type:'',strong:[],weak:[]};
+  obData.strong=obData.strong||[];obData.weak=obData.weak||[];
+  $('#onboard').classList.remove('hidden');
+  renderOb();
+}
+function closeOnboard(){$('#onboard').classList.add('hidden');}
+const OB_STEPS=4;
+function renderOb(){
+  $$('.steps i',$('#onboard')).forEach((s,i)=>s.classList.toggle('on',i<=obStep));
+  const body=$('#ob-body');
+  $('#ob-back').style.visibility=obStep===0?'hidden':'visible';
+  $('#ob-next').textContent=obStep===OB_STEPS-1?'✓ Ολοκλήρωση':'Επόμενο →';
+  if(obStep===0){
+    body.innerHTML=`<h2>Ποιος/α είσαι;</h2><p class="hint">Πες μας λίγα για να προσαρμόσουμε την εμπειρία.</p>
+    <label>Το όνομά σου</label><input id="ob-name" value="${esc(obData.name||'')}" placeholder="π.χ. Μαρία">
+    <label>Είσαι...</label>`;
+    const chips=el('div','chips');
+    [['student','🎒 Μαθητής/τρια'],['adult','👨‍🎓 Ενήλικας που ξαναδίνει'],['transfer','🔁 Φοιτητής/πτυχιούχος (κατατακτήριες)']].forEach(([v,l])=>{
+      const ch=el('div','chip'+(obData.type===v?' on':''),l);ch.onclick=()=>{obData.type=v;renderOb();};chips.appendChild(ch);
+    });
+    body.appendChild(chips);
+    $('#ob-name').oninput=e=>obData.name=e.target.value;
+  }
+  else if(obStep===1){
+    body.innerHTML=`<h2>Επίπεδο & τάξη</h2><p class="hint">Διάλεξε την τάξη σου (ή την πιο σχετική).</p>`;
+    const chips=el('div','chips');
+    LEVELS.forEach(l=>l.grades.forEach(g=>{
+      const ch=el('div','chip'+(obData.gradeCode===g.code?' on':''),g.g);
+      ch.onclick=()=>{obData.gradeCode=g.code;obData.gradeLabel=g.g;renderOb();};chips.appendChild(ch);
+    }));
+    const cha=el('div','chip'+(obData.gradeCode==='none'?' on':''),'📗 Εκτός σχολείου / γενική μελέτη');
+    cha.onclick=()=>{obData.gradeCode='none';obData.gradeLabel='Γενική μελέτη';renderOb();};chips.appendChild(cha);
+    body.appendChild(chips);
+  }
+  else if(obStep===2){
+    body.innerHTML=`<h2>Ποιος είναι ο στόχος σου;</h2>`;
+    const chips=el('div','chips');
+    [['pan','🎓 Πανελλήνιες'],['kt','🔁 Κατατακτήριες'],['school','📚 Καλύτεροι βαθμοί στο σχολείο'],['general','✨ Γενική γνώση/μελέτη']].forEach(([v,l])=>{
+      const ch=el('div','chip'+(obData.goal===v?' on':''),l);ch.onclick=()=>{obData.goal=v;renderOb();};chips.appendChild(ch);
+    });
+    body.appendChild(chips);
+    if(obData.goal==='pan'){
+      const d=el('div');d.innerHTML='<label>Επιστημονικό πεδίο</label>';
+      const sel=el('select');sel.innerHTML='<option value="">— Διάλεξε πεδίο —</option>'+FIELDS.map((f,i)=>`<option value="${i}" ${obData.field==i?'selected':''}>${f.n.replace(/&amp;/g,'&')}</option>`).join('');
+      sel.onchange=()=>obData.field=sel.value===''?null:+sel.value;d.appendChild(sel);body.appendChild(d);
+    }
+    const dt=el('div');dt.innerHTML=`<label>Ημερομηνία εξετάσεων/στόχος (προαιρετικά)</label><input type="date" id="ob-date" value="${esc(obData.targetDate||'')}">`;
+    body.appendChild(dt);$('#ob-date').onchange=e=>obData.targetDate=e.target.value;
+  }
+  else if(obStep===3){
+    body.innerHTML=`<h2>Διαθέσιμος χρόνος & μαθήματα</h2>`;
+    const r=el('div','row');
+    r.innerHTML=`<div><label>Ώρες μελέτης/ημέρα</label><select id="ob-h">${[1,2,3,4,5,6].map(n=>`<option ${obData.hoursDay==n?'selected':''}>${n}</option>`).join('')}</select></div>
+    <div><label>Ημέρες/εβδομάδα</label><select id="ob-d">${[3,4,5,6,7].map(n=>`<option ${obData.daysWeek==n?'selected':''}>${n}</option>`).join('')}</select></div>`;
+    body.appendChild(r);
+    // subjects to focus based on grade/goal
+    let subs;
+    if(obData.goal==='pan'&&obData.field!=null&&obData.field!=='')subs=FIELDS[obData.field].subs.map(s=>s.replace(/&amp;/g,'&'));
+    else if(obData.gradeCode&&obData.gradeCode!=='none'){const g=LEVELS.flatMap(l=>l.grades).find(x=>x.code===obData.gradeCode);subs=g?g.subjects.map(s=>s.replace(/&amp;/g,'&')):allSubjects();}
+    else subs=allSubjects();
+    body.appendChild(el('label',null,'💪 Δυνατά μαθήματα (πάτησε για επιλογή)'));
+    const c1=el('div','chips');subs.forEach(s=>{const ch=el('div','chip'+(obData.strong.includes(s)?' on':''),s);ch.onclick=()=>{toggle(obData.strong,s);renderOb();};c1.appendChild(ch);});body.appendChild(c1);
+    body.appendChild(el('label',null,'🎯 Αδύναμα μαθήματα (θα διαβάζεις περισσότερο)'));
+    const c2=el('div','chips');subs.forEach(s=>{const ch=el('div','chip'+(obData.weak.includes(s)?' on':''),s);ch.onclick=()=>{toggle(obData.weak,s);renderOb();};c2.appendChild(ch);});body.appendChild(c2);
+    $('#ob-h').onchange=e=>obData.hoursDay=+e.target.value;$('#ob-d').onchange=e=>obData.daysWeek=+e.target.value;
+    obData.hoursDay=obData.hoursDay||+$('#ob-h').value;obData.daysWeek=obData.daysWeek||+$('#ob-d').value;
+  }
+}
+function toggle(arr,v){const i=arr.indexOf(v);if(i<0)arr.push(v);else arr.splice(i,1);}
+$('#ob-back').onclick=()=>{if(obStep>0)obStep--;renderOb();};
+$('#ob-next').onclick=()=>{
+  if(obStep===0&&!obData.type)return alert('Διάλεξε τι είσαι.');
+  if(obStep<OB_STEPS-1){obStep++;renderOb();return;}
+  // finalize
+  const TYPEL={student:'Μαθητής/τρια',adult:'Ενήλικας που ξαναδίνει',transfer:'Φοιτητής/Κατατακτήριες'};
+  const GOALL={pan:'Πανελλήνιες',kt:'Κατατακτήριες',school:'Σχολικοί βαθμοί',general:'Γενική μελέτη'};
+  obData.typeLabel=TYPEL[obData.type]||'';
+  obData.hoursDay=obData.hoursDay||2;obData.daysWeek=obData.daysWeek||5;
+  if(obData.goal==='pan'&&obData.field!=null&&obData.field!==''){obData.goalLabel='Πανελλήνιες — '+FIELDS[obData.field].n.split('—')[1].trim();}
+  else obData.goalLabel=GOALL[obData.goal]||'Γενική μελέτη';
+  S.profile=obData;
+  S.schedule=buildSchedule();
+  save();refreshWho();closeOnboard();go('home');
+};
+
+/* =========================================================================
+   PWA: service worker + κουμπί εγκατάστασης
+   ========================================================================= */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;const b=document.getElementById('install-btn');if(b)b.style.display='';});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;const b=document.getElementById('install-btn');if(b)b.style.display='none';});
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+async function doInstall(){
+  if(!deferredPrompt){alert('Για εγκατάσταση: άνοιξε το από σύνδεσμο http(s)/localhost (όχι με διπλό κλικ στο αρχείο) και χρησιμοποίησε το μενού του browser → «Προσθήκη στην αρχική οθόνη».');return;}
+  deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;
+}
+
+/* =========================================================================
+   INIT
+   ========================================================================= */
+applyPrefs();
+refreshWho();
+const _goParam=new URLSearchParams(location.search).get('go');
+const _valid=['home','subjects','exams','syllabus','careers','schedule','library','quiz','board','notes','pomodoro','settings'];
+go(_goParam&&_valid.includes(_goParam)?_goParam:'home');
+if(!S.profile) openOnboard();
+</script>
+</body>
+</html>
