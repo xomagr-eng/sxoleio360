@@ -23,8 +23,10 @@ Offline εφαρμογή σχολικής μελέτης & προετοιμασ�
 
 ## Εκδόσεις
 - **Online / PWA:** το GitHub Pages link (παραπάνω)
-- **Standalone:** `SXOLEIO360_standalone.html` — ένα αρχείο, διπλό κλικ, offline
-- **ZIP:** `SXOLEIO360_PWA.zip` — για ανέβασμα σε host (π.χ. tiiny.host)
+- **Standalone:** [`SXOLEIO360_standalone.html`](SXOLEIO360_standalone.html) — ένα αρχείο, διπλό κλικ, offline
+- **ZIP:** [`SXOLEIO360_PWA.zip`](SXOLEIO360_PWA.zip) — για ανέβασμα σε host (π.χ. tiiny.host)
+
+📄 **Αναλυτικές οδηγίες εγκατάστασης & χρήσης:** [ΟΔΗΓΙΕΣ.txt](%CE%9F%CE%94%CE%97%CE%93%CE%99%CE%95%CE%A3.txt)
 
 ## Πηγές δεδομένων
 Σχολικά βιβλία: [ebooks.edu.gr](https://ebooks.edu.gr) (Υπ. Παιδείας). Βάσεις μορίων: AeiTei.gr / Υπ. Παιδείας (ΓΕΛ 90% ημερήσια, 2026). Οι βάσεις είναι ενδεικτικές — επιβεβαίωσε τις επίσημες.
