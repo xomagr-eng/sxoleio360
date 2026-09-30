@@ -173,6 +173,30 @@ tr:hover td{background:var(--panel2)}
   .topbar .btn{padding:8px 12px;font-size:.82rem}
 }
 
+/* 🔄 ΟΡΙΖΟΝΤΙΑ ΘΕΣΗ (landscape) σε κινητό/tablet:
+   επαναφορά πλαϊνής μπάρας & πλατιά, «μεγάλη» διάταξη που αξιοποιεί το φάρδος.
+   Μπαίνει ΜΕΤΑ τα max-width queries ώστε να υπερισχύει σε landscape τηλέφωνα. */
+@media (orientation: landscape) and (max-height: 600px){
+  .app{flex-direction:row}
+  .side{width:172px;height:100vh;position:sticky;top:0;z-index:20;
+        border-right:1px solid var(--line);border-bottom:0;padding:8px 6px;overflow-y:auto}
+  .brand{padding:2px 4px 8px}
+  .brand .logo{width:30px;height:30px;font-size:14px;border-radius:8px}
+  .brand b{font-size:.9rem}
+  .brand small{font-size:.62rem}
+  .nav{flex-direction:column;flex-wrap:nowrap;overflow:visible;gap:2px}
+  .nav button{width:100%;white-space:normal;padding:7px 9px;font-size:.82rem;min-height:0}
+  .nav button .ic{width:20px;font-size:.95rem}
+  .nav button.active{box-shadow:inset 3px 0 0 var(--red)}
+  .side .tip{display:block;font-size:.62rem}
+  .main{padding:12px 16px}
+  .topbar h2{font-size:1.15rem}
+  /* περισσότερες στήλες όταν υπάρχει πλάτος */
+  .g2{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+  .row>*{min-width:150px}
+}
+
 /* Μέγεθος γραμμάτων (κλιμακώνεται μέσω html font-size) & Light theme */
 html{font-size:15px}
 body{font-size:1rem}
@@ -185,6 +209,15 @@ body{font-size:1rem}
 :root.theme-light .side{background:linear-gradient(180deg,#f7f9fc,#eef2f7)}
 :root.theme-light .q-opt.correct{background:#fff7e0}
 :root.theme-light .q-opt.wrong{background:#fde8ea;color:#7a1620}
+
+/* Toast ειδοποιήσεις (διακριτικές, δεν μπλοκάρουν) */
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120%);z-index:80;
+  background:var(--panel2);color:var(--txt);border:1px solid var(--red);border-radius:12px;
+  padding:11px 18px;font-size:.9rem;font-weight:600;box-shadow:var(--shadow);opacity:0;
+  transition:transform .3s cubic-bezier(.2,.9,.3,1.3),opacity .3s;max-width:88vw;pointer-events:none}
+#toast.show{transform:translate(-50%,0);opacity:1}
+/* Confetti canvas (γιορτή στα ορόσημα) */
+#confetti{position:fixed;inset:0;z-index:90;pointer-events:none}
 
 /* Print */
 @media print{
@@ -299,6 +332,27 @@ function toggleFullscreen(){
   }catch(e){}
 }
 document.addEventListener('fullscreenchange',()=>{const b=document.getElementById('fs-btn');if(b)b.textContent=document.fullscreenElement?'⤢ Έξοδος':'⛶ Πλήρης οθόνη';});
+/* Διακριτική ειδοποίηση toast */
+function toast(msg,icon){
+  let t=document.getElementById('toast'); if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}
+  t.innerHTML=(icon||'✓')+' '+String(msg).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  t.classList.add('show'); clearTimeout(window.__toastT); window.__toastT=setTimeout(()=>t.classList.remove('show'),2200);
+  try{if(navigator.vibrate)navigator.vibrate(15);}catch(e){}
+}
+/* Γιορτή με κομφετί στα ορόσημα */
+function confetti(){
+  let cv=document.getElementById('confetti'); if(!cv){cv=document.createElement('canvas');cv.id='confetti';document.body.appendChild(cv);}
+  const ctx=cv.getContext('2d'), W=cv.width=innerWidth, H=cv.height=innerHeight;
+  const cols=['#2f8fd8','#5bb2f0','#e8b74a','#ffffff','#e0505c'];
+  const P=Array.from({length:Math.min(160,Math.round(W/6))},()=>({x:Math.random()*W,y:-20-Math.random()*H*0.4,r:5+Math.random()*7,c:cols[Math.random()*cols.length|0],vx:-2.5+Math.random()*5,vy:2+Math.random()*4,rot:Math.random()*6,vr:-0.25+Math.random()*0.5}));
+  const start=performance.now();
+  (function loop(now){
+    ctx.clearRect(0,0,W,H); let alive=false;
+    P.forEach(p=>{p.vy+=0.06;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr; if(p.y<H+20)alive=true;
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.fillStyle=p.c;ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.6);ctx.restore();});
+    if(alive && now-start<2800) requestAnimationFrame(loop); else cv.remove();
+  })(start);
+}
 
 /* ---------- CURRICULUM DATA ----------
    ebooks.edu.gr classcodes: K07-K09 Γυμνάσιο, K10-K12 Λύκειο */
@@ -764,6 +818,13 @@ function viewHome(c){
     c.appendChild(el('div','notice','👋 Καλωσήρθες! Δεν έχεις προφίλ ακόμα. Πάτησε «Ξεκίνα» για να απαντήσεις μερικές ερωτήσεις και να φτιαχτεί αυτόματα πρόγραμμα διαβάσματος.'));
     const b=el('button','btn','🚀 Ξεκίνα το ερωτηματολόγιο');b.onclick=()=>openOnboard();c.appendChild(b);
   }
+  // 💬 Καθημερινό μήνυμα κινήτρου
+  const MOT=['Κάθε μέρα λίγο, φτάνεις μακριά.','Η συνέπεια νικάει το ταλέντο.','Δεν χρειάζεται να είσαι τέλειος — απλώς συνέχισε.',
+    'Το καλύτερο διάβασμα είναι αυτό που κάνεις σήμερα.','Μικρά βήματα, μεγάλα αποτελέσματα.','Πίστεψε στον εαυτό σου — μπορείς!',
+    'Η προσπάθεια πάντα ανταμείβεται.','Ένα κεφάλαιο τη φορά.','Η γνώση είναι δύναμη — χτίσ’ την κάθε μέρα.',
+    'Ξεκούραση + μελέτη = επιτυχία.','Οι μεγάλες επιτυχίες ξεκινούν από μια μικρή απόφαση.','Σήμερα είναι καλή μέρα για να μάθεις κάτι νέο.'];
+  const mi=Math.floor(Date.now()/86400000)%MOT.length;
+  c.appendChild(el('div',null,`<div style="text-align:center;color:var(--muted);font-style:italic;font-size:.92rem;margin:2px 0 10px">💬 ${MOT[mi]}</div>`));
   // ⏳ Αντίστροφη μέτρηση εξετάσεων
   if(p && p.targetDate){
     const dU=daysUntil(p.targetDate);
@@ -833,7 +894,8 @@ function viewHome(c){
     tc.appendChild(ul);
     const gob=el('button','btn ghost sm no-print','🗓️ Όλο το πρόγραμμα →');gob.onclick=()=>go('schedule');tc.appendChild(gob);
     c.appendChild(tc);
-    $$('[data-today]',tc).forEach(cb=>cb.onchange=()=>{S.done[cb.dataset.today]=cb.checked;save();if(cb.checked)touchActivity();});
+    $$('[data-today]',tc).forEach(cb=>cb.onchange=()=>{S.done[cb.dataset.today]=cb.checked;save();if(cb.checked)touchActivity();
+      if(cb.checked && $$('[data-today]',tc).every(x=>x.checked)){confetti();toast('Ολοκλήρωσες τη σημερινή μελέτη! 🔥','🎉');}});
   }
   // 📈 Τάση κουίζ
   if(S.quizScores.length>=2){
@@ -1041,6 +1103,7 @@ function wireFav(container,after){
     const s=allSchoolsList()[+b.dataset.id]; if(!s)return;
     toggleFav(s);
     b.textContent=isFav(s)?'★':'☆'; b.style.color=isFav(s)?'#e8b74a':'var(--muted)';
+    toast(isFav(s)?'Προστέθηκε στα αγαπημένα':'Αφαιρέθηκε','⭐');
     if(after)after();
   });
 }
@@ -1173,7 +1236,7 @@ function schoolsCSV(list,fname){
   const head=['Σχολή','Ίδρυμα','Πόλη','Πεδίο','Βάση 2026','Βάση 2025','Μεταβολή 25→26','Ενδεικτικά επαγγέλματα'];
   const rows=list.map(s=>[s.d,s.inst,s.city,(s.f!=null?(s.f+1)+'ο Πεδίο':''),(s.b26!=null?s.b26:''),(s.b25!=null?s.b25:''),(s.b26!=null&&s.b25!=null?(s.b26-s.b25):''),careerHint(s.d)]);
   const csv='﻿'+[head,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
-  const a=el('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=(fname||'sxoles')+'.csv';a.click();
+  const a=el('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=(fname||'sxoles')+'.csv';a.click();toast('Το CSV κατέβηκε','⬇️');
 }
 /* CSV του «Πού μπαίνω»: σχολές που πιάνεις + στόχοι, με στήλη Κατάσταση & απόσταση */
 function matcherCSV(inside,near,m){
@@ -1181,7 +1244,7 @@ function matcherCSV(inside,near,m){
   const mk=(s,st)=>[st,s.d,s.inst,s.city,(s.f!=null?(s.f+1)+'ο Πεδίο':''),(s.b26!=null?s.b26:''),(s.b25!=null?s.b25:''),(s.b26!=null&&s.b25!=null?(s.b26-s.b25):''),(s.b26!=null?(m-s.b26):''),careerHint(s.d)];
   const rows=[...inside.map(s=>mk(s,'Πιάνεις')),...near.map(s=>mk(s,'Στόχος (λίγο πιο πάνω)'))];
   const csv='﻿'+[head,...rows].map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n');
-  const a=el('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='sxoles_pou_pianw.csv';a.click();
+  const a=el('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='sxoles_pou_pianw.csv';a.click();toast('Το CSV κατέβηκε','⬇️');
 }
 /* βρες αντίστοιχο «δημοφιλές» τμήμα (για γράφημα 5ετίας/μαθήματα στη σύγκριση) */
 function findFeatured(s){
@@ -1542,7 +1605,7 @@ function exportICS(){
     });
   }));
   const ics=`BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//SXOLEIO360//EL\r\nCALSCALE:GREGORIAN\r\nX-WR-CALNAME:Πρόγραμμα Διαβάσματος\r\n${ev}END:VCALENDAR\r\n`;
-  const a=el('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));a.download='programma_diavasmatos.ics';a.click();
+  const a=el('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar;charset=utf-8'}));a.download='programma_diavasmatos.ics';a.click();toast('Το ημερολόγιο (.ics) κατέβηκε','📅');
 }
 function viewSchedule(c){
   if(!S.profile){
@@ -1820,7 +1883,8 @@ function renderQuiz(host){
       const mc=qs.filter(q=>q.type==='mc');
       const score=mc.reduce((a,q,i)=>{const idx=qs.indexOf(q);return a+(answers[idx]===q.a?1:0);},0);
       quizState.autoScore=score;quizState.autoTotal=mc.length;
-      if(mc.length)S.quizScores.push({subject,score,total:mc.length,date:new Date().toLocaleDateString('el-GR')});
+      if(mc.length){S.quizScores.push({subject,score,total:mc.length,date:new Date().toLocaleDateString('el-GR')});
+        if(score===mc.length){confetti();toast('Τέλειο! 100% 🎯','🎉');} else if(score/mc.length>=0.7){toast('Μπράβο! '+score+'/'+mc.length,'👏');}}
       // καταγραφή/αφαίρεση λαθών ανά μάθημα
       if(!S.wrong)S.wrong={};
       qs.forEach((q,i)=>{
