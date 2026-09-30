@@ -218,6 +218,15 @@ body{font-size:1rem}
 #toast.show{transform:translate(-50%,0);opacity:1}
 /* Confetti canvas (γιορτή στα ορόσημα) */
 #confetti{position:fixed;inset:0;z-index:90;pointer-events:none}
+/* Απαλή είσοδος καρτών όταν αλλάζει ενότητα (μόνο στο render, όχι σε κάθε αναζήτηση) */
+@keyframes cardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#views.enter .card{animation:cardIn .34s ease both}
+#views.enter>.card:nth-child(2){animation-delay:.04s}
+#views.enter>.card:nth-child(3){animation-delay:.08s}
+#views.enter>.card:nth-child(4){animation-delay:.12s}
+#views.enter>.card:nth-child(5){animation-delay:.16s}
+#views.enter>.card:nth-child(n+6){animation-delay:.2s}
+@media (prefers-reduced-motion: reduce){#views.enter .card{animation:none} #toast{transition:opacity .15s}}
 
 /* Print */
 @media print{
@@ -311,7 +320,7 @@ const DEFAULT={
   customCards:[],         // flashcards χρήστη [{subject,front,back}]
   cardKnown:{},           // {cardKey:true} (legacy)
   cardSR:{},              // spaced repetition {cardKey:{reps,interval,ease,due}}
-  prefs:{theme:'dark',font:1}, // θέμα & μέγεθος γραμμάτων
+  prefs:{theme:'dark',font:1,sound:true}, // θέμα & μέγεθος γραμμάτων & ήχοι
   pomodoros:0,            // ολοκληρωμένες συνεδρίες μελέτης
   stats:{lastActive:'',streak:0,cardsReviewed:0} // σερί ημερών & στατιστικά
 };
@@ -341,8 +350,22 @@ function toast(msg,icon){
   t.classList.add('show'); clearTimeout(window.__toastT); window.__toastT=setTimeout(()=>t.classList.remove('show'),2200);
   try{if(navigator.vibrate)navigator.vibrate(15);}catch(e){}
 }
+/* Ήχος επιτυχίας (απαλή άνοδος νότας) — σέβεται τη ρύθμιση ήχου */
+function chime(){
+  if(S.prefs && S.prefs.sound===false) return;
+  try{
+    const ac=new (window.AudioContext||window.webkitAudioContext)(), now=ac.currentTime;
+    [[523.25,0],[659.25,0.09],[783.99,0.18],[1046.5,0.27]].forEach(([f,t])=>{
+      const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(ac.destination);
+      g.gain.setValueAtTime(0.0001,now+t);g.gain.exponentialRampToValueAtTime(0.13,now+t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,now+t+0.35);
+      o.start(now+t);o.stop(now+t+0.4);
+    });
+    setTimeout(()=>{try{ac.close();}catch(e){}},1300);
+  }catch(e){}
+}
 /* Γιορτή με κομφετί στα ορόσημα */
 function confetti(){
+  chime();
   let cv=document.getElementById('confetti'); if(!cv){cv=document.createElement('canvas');cv.id='confetti';document.body.appendChild(cv);}
   const ctx=cv.getContext('2d'), W=cv.width=innerWidth, H=cv.height=innerHeight;
   const cols=['#2f8fd8','#5bb2f0','#e8b74a','#ffffff','#e0505c'];
@@ -801,6 +824,7 @@ function go(v){
   const c=$('#views');c.innerHTML='';
   if(window.__pomoInt){clearInterval(window.__pomoInt);window.__pomoInt=null;window.__pomoRunning=false;} // pause χρονόμετρο όταν φεύγεις
   ({home:viewHome,subjects:viewSubjects,exams:viewExams,syllabus:viewSyllabus,careers:viewCareers,schedule:viewSchedule,library:viewLibrary,quiz:viewQuiz,board:viewBoard,notes:viewNotes,pomodoro:viewPomodoro,settings:viewSettings}[v]||viewHome)(c);
+  c.classList.add('enter');clearTimeout(window.__enterT);window.__enterT=setTimeout(()=>c.classList.remove('enter'),700);
   window.scrollTo(0,0);
 }
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b)go(b.dataset.view);});
@@ -865,6 +889,7 @@ function viewHome(c){
     const badges=el('div');badges.style.cssText='display:flex;flex-wrap:wrap;gap:10px;margin-top:6px';
     ACHIEVEMENTS.forEach(a=>{const un=a.t(st);const b=el('div');b.title=a.d;b.style.cssText=`text-align:center;width:82px;opacity:${un?1:.35};filter:${un?'none':'grayscale(1)'}`;b.innerHTML=`<div style="font-size:1.8rem">${a.i}</div><small style="display:block;font-weight:${un?700:400};font-size:.68rem;line-height:1.2">${esc(a.n)}</small>`;badges.appendChild(b);});
     ac.appendChild(badges);
+    const shareB=el('button','btn ghost sm no-print','📤 Μοιράσου την πρόοδό μου');shareB.style.marginTop='12px';shareB.onclick=shareProgress;ac.appendChild(shareB);
     c.appendChild(ac);
   }
 
@@ -1972,6 +1997,38 @@ const ACHIEVEMENTS=[
  {i:'⭐',n:'Στοχοθεσία',d:'5 αγαπημένες σχολές',t:s=>s.favorites>=5},
  {i:'🧠',n:'Καλή πορεία',d:'Μέση επιτυχία ≥70% (≥3 κουίζ)',t:s=>s.quizzes>=3&&s.avgQuiz>=70}
 ];
+/* 📤 Κάρτα προόδου για κοινοποίηση (PNG + Web Share) */
+async function shareProgress(){
+  const st=computeStats(), cnt=ACHIEVEMENTS.filter(a=>a.t(st)).length;
+  const W=1080,H=1080, cv=document.createElement('canvas');cv.width=W;cv.height=H;const x=cv.getContext('2d');
+  const g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,'#123350');g.addColorStop(1,'#0c0d11');x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.fillStyle='rgba(47,143,216,0.16)';x.beginPath();x.arc(W-90,120,230,0,7);x.fill();
+  x.fillStyle='rgba(232,183,74,0.10)';x.beginPath();x.arc(120,H-120,200,0,7);x.fill();
+  const F=(w,s)=>`${w} ${s}px "Segoe UI",Arial,sans-serif`;
+  // header
+  x.textAlign='left';x.fillStyle='#fff';x.font=F('800',56);x.fillText('ΣΧΟΛΕΙΟ 360°',80,128);
+  x.fillStyle='#5bb2f0';x.font=F('600',30);x.fillText('Η πρόοδός μου στη μελέτη',82,176);
+  // streak
+  x.textAlign='center';x.fillStyle='#e8b74a';x.font=F('800',168);x.fillText('🔥 '+st.streak,W/2,410);
+  x.fillStyle='#cbd7e5';x.font=F('600',34);x.fillText('ημέρες συνεχόμενης μελέτης',W/2,462);
+  // tiles 2x2
+  const tiles=[['📝',st.quizzes,'κουίζ'],['🎯',st.avgQuiz+'%','μ.ό. επιτυχία'],['🃏',st.cardsReviewed,'επαναλήψεις'],['🍅',st.pomodoros,'Pomodoro']];
+  const tw=430,th=150,gap=40,x0=(W-tw*2-gap)/2,y0=540;
+  const rr=(px,py,w,h,r)=>{x.beginPath();x.moveTo(px+r,py);x.arcTo(px+w,py,px+w,py+h,r);x.arcTo(px+w,py+h,px,py+h,r);x.arcTo(px,py+h,px,py,r);x.arcTo(px,py,px+w,py,r);x.closePath();};
+  tiles.forEach((t,i)=>{const px=x0+(i%2)*(tw+gap),py=y0+((i/2)|0)*(th+gap);
+    x.fillStyle='rgba(255,255,255,0.06)';rr(px,py,tw,th,20);x.fill();
+    x.textAlign='left';x.font=F('800',54);x.fillStyle='#fff';x.fillText(t[0]+' '+t[1],px+30,py+80);
+    x.font=F('500',28);x.fillStyle='#9fb2c6';x.fillText(t[2],px+30,py+120);});
+  // achievements
+  x.textAlign='center';x.fillStyle='#fff';x.font=F('700',44);x.fillText('🏆 '+cnt+'/'+ACHIEVEMENTS.length+' κονκάρδες',W/2,y0+2*(th+gap)+50);
+  // footer
+  x.fillStyle='#8aa0b5';x.font=F('600',28);x.fillText('xomagr-eng.github.io/sxoleio360',W/2,H-86);
+  x.fillStyle='#6f8497';x.font=F('500',24);x.fillText('© Chronis Makris',W/2,H-46);
+  const blob=await new Promise(r=>cv.toBlob(r,'image/png'));
+  const file=new File([blob],'proodos-sxoleio360.png',{type:'image/png'});
+  try{ if(navigator.canShare&&navigator.canShare({files:[file]})){ await navigator.share({files:[file],title:'Η πρόοδός μου',text:'Η πρόοδός μου στο ΣΧΟΛΕΙΟ 360° 🔥📚'}); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  const a=el('a');a.href=URL.createObjectURL(blob);a.download='proodos-sxoleio360.png';a.click();toast('Η κάρτα προόδου κατέβηκε','📤');
+}
 function renderFlashcards(host){
   host.innerHTML='';
   const subs=[...new Set([...Object.keys(FLASHCARDS),...(S.customCards||[]).map(c=>c.subject)])];
@@ -2234,6 +2291,12 @@ function viewSettings(c){
   fMinus.onclick=()=>setFont((S.prefs.font||1)-0.1);fReset.onclick=()=>setFont(1);fPlus.onclick=()=>setFont((S.prefs.font||1)+0.1);
   fg.appendChild(fMinus);fg.appendChild(fReset);fg.appendChild(fPlus);fontBox.appendChild(fg);
   arow.appendChild(themeBox);arow.appendChild(fontBox);ap.appendChild(arow);
+  // Ήχοι επιτυχίας
+  const sndBox=el('div');sndBox.style.marginTop='12px';
+  const sndLbl=el('label');sndLbl.style.cssText='display:flex;align-items:center;gap:8px;cursor:pointer;margin:0';
+  sndLbl.innerHTML=`<input type="checkbox" id="pref-snd" style="width:auto" ${S.prefs.sound===false?'':'checked'}> 🔊 Ήχοι επιτυχίας (γιορτή στα ορόσημα)`;
+  sndBox.appendChild(sndLbl);ap.appendChild(sndBox);
+  sndLbl.querySelector('#pref-snd').onchange=e=>{S.prefs.sound=e.target.checked;save();if(e.target.checked)chime();};
   c.appendChild(ap);
 
   const data=el('div','card');
